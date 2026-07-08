@@ -43,6 +43,7 @@ export type OptionCost = {
   monthlyEquivalent: number;
   financedAmount?: number;
   monthlyLoanPayment?: number;
+  loanPaymentMonths?: number;
   depreciationReserve?: number;
   drivers: string[];
 };
@@ -85,6 +86,25 @@ function hasSafetyFlag(input: CalculatorInput) {
   );
 }
 
+function sanitizeInput(input: CalculatorInput): CalculatorInput {
+  return {
+    ...input,
+    vehicleYear: Math.max(input.vehicleYear, 1950),
+    mileage: Math.max(input.mileage, 0),
+    currentValue: Math.max(input.currentValue, 0),
+    remainingLoanBalance: Math.max(input.remainingLoanBalance, 0),
+    repairQuote: Math.max(input.repairQuote, 0),
+    additionalRepairs: Math.max(input.additionalRepairs, 0),
+    usableMonthsAfterRepair: Math.max(input.usableMonthsAfterRepair, 1),
+    usedPurchasePrice: Math.max(input.usedPurchasePrice, 0),
+    newPurchasePrice: Math.max(input.newPurchasePrice, 0),
+    downPayment: Math.max(input.downPayment, 0),
+    apr: Math.max(input.apr, 0),
+    loanTermMonths: Math.max(input.loanTermMonths, 1),
+    taxesAndFees: Math.max(input.taxesAndFees, 0)
+  };
+}
+
 function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", equity: number): OptionCost {
   const purchasePrice = kind === "used" ? input.usedPurchasePrice : input.newPurchasePrice;
   const depreciationRate =
@@ -97,7 +117,8 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
   const negativeEquity = Math.abs(Math.min(equity, 0));
   const financedAmount = Math.max(purchasePrice + negativeEquity + input.taxesAndFees - input.downPayment - equityOffset, 0);
   const monthlyLoanPayment = loanPayment(financedAmount, input.apr, input.loanTermMonths);
-  const paidDuringPeriod = monthlyLoanPayment * input.comparisonMonths;
+  const loanPaymentMonths = Math.min(input.comparisonMonths, Math.max(input.loanTermMonths, 0));
+  const paidDuringPeriod = monthlyLoanPayment * loanPaymentMonths;
   const ownershipDeltas =
     (input.insuranceMonthlyDelta + input.fuelMonthlyDelta + input.maintenanceMonthlyDelta) * input.comparisonMonths;
 
@@ -112,16 +133,19 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
     monthlyEquivalent: totalCost / input.comparisonMonths,
     financedAmount,
     monthlyLoanPayment,
+    loanPaymentMonths,
     depreciationReserve,
     drivers: [
       `${money(financedAmount)} estimated financed amount`,
-      `${money(monthlyLoanPayment)} estimated monthly loan payment`,
+      `${money(monthlyLoanPayment)} estimated monthly loan payment counted for ${loanPaymentMonths} month${loanPaymentMonths === 1 ? "" : "s"}`,
+      ...(loanPaymentMonths < input.comparisonMonths ? [`Loan payments stop after the entered ${input.loanTermMonths}-month term`] : []),
       `${money(depreciationReserve)} simple depreciation reserve`
     ]
   };
 }
 
-export function calculateRepairOrReplace(input: CalculatorInput): CalculatorResult {
+export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorResult {
+  const input = sanitizeInput(rawInput);
   const safetyFlag = hasSafetyFlag(input);
   const comparisonMonths = input.comparisonMonths;
   const equity = input.currentValue - input.remainingLoanBalance;
@@ -183,8 +207,9 @@ export function calculateRepairOrReplace(input: CalculatorInput): CalculatorResu
   const confidence: ConfidenceLevel = safetyFlag || riskFactors >= 5 ? "Low" : largeCostSeparation && riskFactors <= 2 ? "High" : "Medium";
 
   const period = `${comparisonMonths} months`;
-  const financialWinner = outcome === "replace" ? bestReplacement : lowestOption;
-  const savings = bestReplacement ? Math.abs((financialWinner?.totalCost ?? 0) - repairOption.totalCost) : 0;
+  const winningFinancialOption = outcome === "replace" ? (bestReplacement ?? lowestOption) : repairOption;
+  const comparisonOption = outcome === "replace" ? repairOption : bestReplacement;
+  const savings = comparisonOption ? Math.abs(winningFinancialOption.totalCost - comparisonOption.totalCost) : 0;
 
   const headline =
     outcome === "safety"
@@ -200,7 +225,9 @@ export function calculateRepairOrReplace(input: CalculatorInput): CalculatorResu
       ? "This tool cannot evaluate vehicle safety. Have a qualified professional inspect the vehicle before making a decision or continuing to drive it."
       : outcome === "close"
         ? `The options are within about ${money(closeThreshold)} over ${period}, so another written repair estimate could change the result.`
-        : `${headline} over the next ${period} by approximately ${money(savings)}.`;
+        : `${headline} over the next ${period} by approximately ${money(savings)} compared with ${
+            outcome === "replace" ? "repairing your current vehicle" : "the lowest replacement estimate"
+          }.`;
 
   const drivers = [
     `${repairOption.label}: ${money(repairOption.totalCost)} estimated over ${period}`,

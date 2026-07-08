@@ -59,13 +59,45 @@ function numberValue(value: string) {
 export function CalculatorForm() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<CalculatorInput>(defaults);
+  const [formError, setFormError] = useState("");
   const router = useRouter();
 
   function update<K extends keyof CalculatorInput>(key: K, value: CalculatorInput[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
+  function numericUpdate<K extends keyof CalculatorInput>(key: K, value: string, min = 0) {
+    update(key, Math.max(min, numberValue(value)) as CalculatorInput[K]);
+  }
+
+  function validate() {
+    const invalid = [
+      form.vehicleYear < 1950 && "Enter a vehicle year of 1950 or later.",
+      form.mileage < 0 && "Mileage cannot be negative.",
+      form.currentValue < 0 && "Current vehicle value cannot be negative.",
+      form.remainingLoanBalance < 0 && "Remaining loan balance cannot be negative.",
+      form.repairQuote < 0 && "Repair quote cannot be negative.",
+      form.additionalRepairs < 0 && "Additional repair costs cannot be negative.",
+      form.usableMonthsAfterRepair < 1 && "Expected usable months must be at least 1.",
+      form.usedPurchasePrice < 0 && "Used replacement price cannot be negative.",
+      form.newPurchasePrice < 0 && "New replacement price cannot be negative.",
+      form.downPayment < 0 && "Down payment cannot be negative.",
+      form.apr < 0 && "APR cannot be negative.",
+      form.loanTermMonths < 1 && "Loan term must be at least 1 month.",
+      form.taxesAndFees < 0 && "Taxes and fees cannot be negative."
+    ].filter(Boolean);
+
+    return invalid[0] || "";
+  }
+
   function submit() {
+    const error = validate();
+    if (error) {
+      setFormError(error);
+      return;
+    }
+
+    setFormError("");
     trackEvent(analyticsEvents.calculatorCompleted, { comparisonMonths: form.comparisonMonths });
     localStorage.setItem("repair-or-replace-input", JSON.stringify(form));
     router.push("/results");
@@ -73,7 +105,15 @@ export function CalculatorForm() {
 
   return (
     <Card className="p-5 sm:p-7">
-      <div className="mb-8" aria-label={`Step ${step} of 3`}>
+      <div
+        className="mb-8"
+        role="progressbar"
+        aria-label="Calculator progress"
+        aria-valuemin={1}
+        aria-valuemax={3}
+        aria-valuenow={step}
+        aria-valuetext={`Step ${step} of 3`}
+      >
         <div className="mb-3 flex items-center justify-between text-sm font-semibold text-ink-700">
           <span>Step {step} of 3</span>
           <span>{Math.round((step / 3) * 100)}%</span>
@@ -82,17 +122,22 @@ export function CalculatorForm() {
           <div className="h-2 rounded-full bg-brand-600 transition-[width]" style={{ width: `${(step / 3) * 100}%` }} />
         </div>
       </div>
+      {formError ? (
+        <div className="mb-6">
+          <Alert tone="danger">{formError}</Alert>
+        </div>
+      ) : null}
 
       {step === 1 ? (
         <section aria-labelledby="current-vehicle-heading">
           <h2 id="current-vehicle-heading" className="text-2xl font-bold text-ink-950">Your Current Vehicle</h2>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <Field label="Vehicle year"><TextInput type="number" min="1950" value={form.vehicleYear} onChange={(e) => update("vehicleYear", numberValue(e.target.value))} /></Field>
-            <Field label="Mileage"><TextInput type="number" min="0" value={form.mileage} onChange={(e) => update("mileage", numberValue(e.target.value))} /></Field>
+            <Field label="Vehicle year"><TextInput type="number" min="1950" value={form.vehicleYear} onChange={(e) => numericUpdate("vehicleYear", e.target.value, 1950)} /></Field>
+            <Field label="Mileage"><TextInput type="number" min="0" value={form.mileage} onChange={(e) => numericUpdate("mileage", e.target.value)} /></Field>
             <Field label="Make"><TextInput value={form.make} onChange={(e) => update("make", e.target.value)} placeholder="Toyota" /></Field>
             <Field label="Model"><TextInput value={form.model} onChange={(e) => update("model", e.target.value)} placeholder="Camry" /></Field>
-            <Field label="Current estimated vehicle value"><TextInput type="number" min="0" value={form.currentValue} onChange={(e) => update("currentValue", numberValue(e.target.value))} /></Field>
-            <Field label="Remaining loan balance"><TextInput type="number" min="0" value={form.remainingLoanBalance} onChange={(e) => update("remainingLoanBalance", numberValue(e.target.value))} /></Field>
+            <Field label="Current estimated vehicle value"><TextInput type="number" min="0" value={form.currentValue} onChange={(e) => numericUpdate("currentValue", e.target.value)} /></Field>
+            <Field label="Remaining loan balance"><TextInput type="number" min="0" value={form.remainingLoanBalance} onChange={(e) => numericUpdate("remainingLoanBalance", e.target.value)} /></Field>
           </div>
           <div className="mt-6">
             <RadioGroup label="Is the vehicle currently safe to drive?" name="safeToDrive" options={threeWayOptions} value={form.safeToDrive} onChange={(value) => update("safeToDrive", value as ThreeWay)} />
@@ -122,9 +167,9 @@ export function CalculatorForm() {
                 {repairCategories.map((category) => <option key={category}>{category}</option>)}
               </Select>
             </Field>
-            <Field label="Repair quote amount"><TextInput type="number" min="0" value={form.repairQuote} onChange={(e) => update("repairQuote", numberValue(e.target.value))} /></Field>
-            <Field label="Estimated additional repair costs in the next 12 months"><TextInput type="number" min="0" value={form.additionalRepairs} onChange={(e) => update("additionalRepairs", numberValue(e.target.value))} /></Field>
-            <Field label="Estimated months this repair will keep the car usable"><TextInput type="number" min="1" value={form.usableMonthsAfterRepair} onChange={(e) => update("usableMonthsAfterRepair", numberValue(e.target.value))} /></Field>
+            <Field label="Repair quote amount"><TextInput type="number" min="0" value={form.repairQuote} onChange={(e) => numericUpdate("repairQuote", e.target.value)} /></Field>
+            <Field label="Estimated additional repair costs in the next 12 months"><TextInput type="number" min="0" value={form.additionalRepairs} onChange={(e) => numericUpdate("additionalRepairs", e.target.value)} /></Field>
+            <Field label="Estimated months this repair will keep the car usable"><TextInput type="number" min="1" value={form.usableMonthsAfterRepair} onChange={(e) => numericUpdate("usableMonthsAfterRepair", e.target.value, 1)} /></Field>
           </div>
           <div className="mt-6 grid gap-6">
             <RadioGroup label="Is this the first major repair in the past 12 months?" name="firstMajorRepair" options={threeWayOptions} value={form.firstMajorRepair} onChange={(value) => update("firstMajorRepair", value as ThreeWay)} />
@@ -153,15 +198,15 @@ export function CalculatorForm() {
                 <option value={36}>36 months</option>
               </Select>
             </Field>
-            <Field label="Used replacement purchase price"><TextInput type="number" min="0" value={form.usedPurchasePrice} onChange={(e) => update("usedPurchasePrice", numberValue(e.target.value))} /></Field>
-            <Field label="New replacement purchase price"><TextInput type="number" min="0" value={form.newPurchasePrice} onChange={(e) => update("newPurchasePrice", numberValue(e.target.value))} /></Field>
-            <Field label="Down payment"><TextInput type="number" min="0" value={form.downPayment} onChange={(e) => update("downPayment", numberValue(e.target.value))} /></Field>
-            <Field label="Estimated APR"><TextInput type="number" min="0" step="0.1" value={form.apr} onChange={(e) => update("apr", numberValue(e.target.value))} /></Field>
-            <Field label="Loan term in months"><TextInput type="number" min="1" value={form.loanTermMonths} onChange={(e) => update("loanTermMonths", numberValue(e.target.value))} /></Field>
+            <Field label="Used replacement purchase price"><TextInput type="number" min="0" value={form.usedPurchasePrice} onChange={(e) => numericUpdate("usedPurchasePrice", e.target.value)} /></Field>
+            <Field label="New replacement purchase price"><TextInput type="number" min="0" value={form.newPurchasePrice} onChange={(e) => numericUpdate("newPurchasePrice", e.target.value)} /></Field>
+            <Field label="Down payment"><TextInput type="number" min="0" value={form.downPayment} onChange={(e) => numericUpdate("downPayment", e.target.value)} /></Field>
+            <Field label="Estimated APR"><TextInput type="number" min="0" step="0.1" value={form.apr} onChange={(e) => numericUpdate("apr", e.target.value)} /></Field>
+            <Field label="Loan term in months"><TextInput type="number" min="1" value={form.loanTermMonths} onChange={(e) => numericUpdate("loanTermMonths", e.target.value, 1)} /></Field>
             <Field label="Estimated monthly insurance increase or decrease"><TextInput type="number" value={form.insuranceMonthlyDelta} onChange={(e) => update("insuranceMonthlyDelta", numberValue(e.target.value))} /></Field>
             <Field label="Estimated monthly fuel-cost difference"><TextInput type="number" value={form.fuelMonthlyDelta} onChange={(e) => update("fuelMonthlyDelta", numberValue(e.target.value))} /></Field>
             <Field label="Estimated monthly maintenance-cost difference"><TextInput type="number" value={form.maintenanceMonthlyDelta} onChange={(e) => update("maintenanceMonthlyDelta", numberValue(e.target.value))} /></Field>
-            <Field label="Estimated sales tax, registration, and dealer-fee total"><TextInput type="number" min="0" value={form.taxesAndFees} onChange={(e) => update("taxesAndFees", numberValue(e.target.value))} /></Field>
+            <Field label="Estimated sales tax, registration, and dealer-fee total"><TextInput type="number" min="0" value={form.taxesAndFees} onChange={(e) => numericUpdate("taxesAndFees", e.target.value)} /></Field>
             <Field label="ZIP code for optional search links" helper="Optional. Used only to create outbound search links."><TextInput inputMode="numeric" maxLength={10} value={form.zipCode} onChange={(e) => update("zipCode", e.target.value)} /></Field>
           </div>
         </section>

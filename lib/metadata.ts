@@ -13,7 +13,7 @@ export function pageMetadata({ title, description, path, type = "website" }: Pag
   const fullTitle = title === siteConfig.name ? title : `${title} | ${siteConfig.name}`;
 
   return {
-    title: fullTitle,
+    title,
     description,
     alternates: { canonical: url },
     openGraph: {

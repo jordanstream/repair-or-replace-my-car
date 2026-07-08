@@ -8,5 +8,12 @@ const styles = {
 };
 
 export function Alert({ children, tone = "info" }: { children: ReactNode; tone?: keyof typeof styles }) {
-  return <div className={`rounded-lg border p-4 text-sm leading-6 ${styles[tone]}`}>{children}</div>;
+  return (
+    <div
+      className={`rounded-lg border p-4 text-sm leading-6 ${styles[tone]}`}
+      role={tone === "danger" ? "alert" : "status"}
+    >
+      {children}
+    </div>
+  );
 }

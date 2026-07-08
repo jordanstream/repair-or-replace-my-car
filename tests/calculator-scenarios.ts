@@ -88,3 +88,64 @@ for (const scenario of scenarios) {
   }
   console.log(`${scenario.name}: ${result.outcome}, ${result.confidence}`);
 }
+
+const zeroApr = calculateRepairOrReplace({
+  ...base,
+  apr: 0,
+  loanTermMonths: 48,
+  usedPurchasePrice: 17000,
+  downPayment: 1000,
+  taxesAndFees: 0,
+  currentValue: 0
+});
+const zeroAprUsed = zeroApr.options.find((option) => option.key === "used");
+if (!zeroAprUsed || zeroAprUsed.monthlyLoanPayment !== zeroAprUsed.financedAmount! / 48) {
+  throw new Error("0% APR should divide financed amount evenly across the loan term");
+}
+console.log("0% APR loan calculation: passed");
+
+const shortLoan = calculateRepairOrReplace({
+  ...base,
+  loanTermMonths: 12,
+  comparisonMonths: 36,
+  usedPurchasePrice: 12000,
+  downPayment: 2000,
+  taxesAndFees: 0,
+  insuranceMonthlyDelta: 0,
+  fuelMonthlyDelta: 0,
+  maintenanceMonthlyDelta: 0
+});
+const shortLoanUsed = shortLoan.options.find((option) => option.key === "used");
+if (!shortLoanUsed || shortLoanUsed.loanPaymentMonths !== 12 || !shortLoanUsed.drivers.some((driver) => driver.includes("payments stop"))) {
+  throw new Error("Loan payments should stop after a shorter entered loan term");
+}
+console.log("short loan term handling: passed");
+
+const usedOnly = calculateRepairOrReplace({ ...base, replacementPreference: "used" });
+if (usedOnly.options.some((option) => option.key === "new")) {
+  throw new Error("Used-only comparison should not include new replacement option");
+}
+const newOnly = calculateRepairOrReplace({ ...base, replacementPreference: "new" });
+if (newOnly.options.some((option) => option.key === "used")) {
+  throw new Error("New-only comparison should not include used replacement option");
+}
+console.log("used-only and new-only comparisons: passed");
+
+const sanitized = calculateRepairOrReplace({
+  ...base,
+  currentValue: -5000,
+  repairQuote: -1000,
+  additionalRepairs: -200,
+  remainingLoanBalance: -300,
+  usedPurchasePrice: -15000,
+  newPurchasePrice: -30000,
+  downPayment: -500,
+  apr: -4,
+  loanTermMonths: -12,
+  taxesAndFees: -700,
+  usableMonthsAfterRepair: -3
+});
+if (sanitized.options.some((option) => option.totalCost < 0 || option.monthlyEquivalent < 0)) {
+  throw new Error("Sanitized negative inputs should not produce negative totals");
+}
+console.log("negative numeric input sanitization: passed");

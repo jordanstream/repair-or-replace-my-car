@@ -13,6 +13,17 @@ import { calculateRepairOrReplace, type CalculatorInput } from "@/lib/calculator
 
 const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
+function loadStoredInput() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const stored = window.localStorage.getItem("repair-or-replace-input");
+    return stored ? (JSON.parse(stored) as CalculatorInput) : null;
+  } catch {
+    return null;
+  }
+}
+
 function buildSearchUrl(engine: "google" | "yelp", input: CalculatorInput) {
   const query = `${input.repairCategory} repair shop ${input.zipCode ?? ""}`.trim();
   if (engine === "google") return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
@@ -20,16 +31,7 @@ function buildSearchUrl(engine: "google" | "yelp", input: CalculatorInput) {
 }
 
 export function ResultsClient() {
-  const [input, setInput] = useState<CalculatorInput | null>(null);
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      const stored = localStorage.getItem("repair-or-replace-input");
-      if (stored) setInput(JSON.parse(stored) as CalculatorInput);
-    }, 0);
-
-    return () => window.clearTimeout(timeout);
-  }, []);
+  const [input] = useState<CalculatorInput | null>(() => loadStoredInput());
 
   const result = useMemo(() => (input ? calculateRepairOrReplace(input) : null), [input]);
 
@@ -57,6 +59,8 @@ export function ResultsClient() {
   }
 
   const replacementFocused = result.outcome === "replace";
+  const usedOption = result.options.find((option) => option.key === "used");
+  const newOption = result.options.find((option) => option.key === "new");
 
   return (
     <div className="space-y-8">
@@ -99,6 +103,37 @@ export function ResultsClient() {
         </Card>
         <ComparisonTable options={result.options} lowestKey={result.lowestOption.key} />
       </section>
+
+      <Card className="p-6">
+        <h2 className="text-2xl font-bold text-ink-950">Estimate basis</h2>
+        <p className="mt-3 leading-7 text-ink-700">
+          These totals are calculated from the estimates you entered. They are not quotes, market values, or safety
+          findings.
+        </p>
+        <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <dt className="text-sm font-semibold text-ink-600">Repair quote entered</dt>
+            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(input.repairQuote)}</dd>
+          </div>
+          <div>
+            <dt className="text-sm font-semibold text-ink-600">Expected added repairs</dt>
+            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(input.additionalRepairs)}</dd>
+          </div>
+          <div>
+            <dt className="text-sm font-semibold text-ink-600">Used replacement total</dt>
+            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{usedOption ? formatter.format(usedOption.totalCost) : "Not compared"}</dd>
+          </div>
+          <div>
+            <dt className="text-sm font-semibold text-ink-600">New replacement total</dt>
+            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{newOption ? formatter.format(newOption.totalCost) : "Not compared"}</dd>
+          </div>
+        </dl>
+        <p className="mt-4 text-sm leading-6 text-ink-600">
+          Repair total includes the quote, expected additional repairs, remaining-loan exposure when entered, and an
+          ownership reserve. Replacement totals include financing during the comparison period, taxes and fees, ownership
+          deltas, equity or negative equity, and a simple depreciation reserve.
+        </p>
+      </Card>
 
       <section className="grid gap-5 md:grid-cols-3">
         {result.options.map((option) => (
@@ -152,17 +187,24 @@ export function ResultsClient() {
           service quality can change. We do not guarantee third-party services or outcomes.
         </p>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {replacementFocused ? (
+          {result.safetyFlag ? (
             <>
-              <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/calculator">Estimate a replacement-car payment</Link>
+              <a className="rounded-md border border-danger-700 bg-danger-50 p-4 font-semibold text-danger-700 hover:bg-white" href={buildSearchUrl("google", input)} target="_blank" rel="noreferrer" onClick={() => trackEvent(analyticsEvents.externalRepairSearchClicked)}>Find a qualified inspection or repair professional</a>
+              <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/disclaimer">Review safety and decision disclaimer</Link>
+              <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/calculator">Adjust the estimate after inspection</Link>
+            </>
+          ) : replacementFocused ? (
+            <>
+              <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/calculator">Adjust replacement assumptions</Link>
               <a className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="https://www.google.com/search?q=trade+in+private+sale+car+options" target="_blank" rel="noreferrer" onClick={() => trackEvent(analyticsEvents.externalReplacementLinkClicked)}>Research trade-in and private-sale options</a>
+              <a className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="https://www.google.com/search?q=questions+to+ask+before+buying+a+used+car" target="_blank" rel="noreferrer" onClick={() => trackEvent(analyticsEvents.externalReplacementLinkClicked)}>Questions to ask before buying used</a>
             </>
           ) : (
             <>
-              <span className="rounded-md border border-line p-4 font-semibold text-ink-800">Get a written second repair estimate</span>
-              <a className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href={buildSearchUrl("google", input)} target="_blank" rel="noreferrer" onClick={() => trackEvent(analyticsEvents.externalRepairSearchClicked)}>Search Google for repair shops near you</a>
+              <a className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href={buildSearchUrl("google", input)} target="_blank" rel="noreferrer" onClick={() => trackEvent(analyticsEvents.externalRepairSearchClicked)}>Find shops for a written second estimate</a>
               <a className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href={buildSearchUrl("yelp", input)} target="_blank" rel="noreferrer" onClick={() => trackEvent(analyticsEvents.externalRepairSearchClicked)}>Search Yelp for repair shops near you</a>
-              <span className="rounded-md border border-line p-4 font-semibold text-ink-800">Questions to ask before approving a major repair</span>
+              <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/guides/is-a-car-worth-fixing">Questions to ask before approving repair</Link>
+              <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/calculator">Adjust the repair estimate</Link>
             </>
           )}
         </div>

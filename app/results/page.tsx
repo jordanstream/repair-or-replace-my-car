@@ -1,11 +1,17 @@
 import { ResultsClient } from "@/components/ResultsClient";
 import { pageMetadata } from "@/lib/metadata";
 
-export const metadata = pageMetadata({
+export const metadata = {
+  ...pageMetadata({
   title: "Your Repair or Replace Results",
   description: "Review your estimated repair and replacement cost comparison.",
   path: "/results"
-});
+  }),
+  robots: {
+    index: false,
+    follow: false
+  }
+};
 
 export default function ResultsPage() {
   const jsonLd = {

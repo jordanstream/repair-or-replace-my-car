@@ -4,6 +4,7 @@ export const analyticsEvents = {
   resultRepair: "result_repair",
   resultReplace: "result_replace",
   resultCloseCall: "result_close_call",
+  safetyWarningResult: "safety_warning_result",
   externalRepairSearchClicked: "external_repair_search_clicked",
   externalReplacementLinkClicked: "external_replacement_link_clicked",
   printResultsClicked: "print_results_clicked"
@@ -12,8 +13,10 @@ export const analyticsEvents = {
 export type AnalyticsEvent = (typeof analyticsEvents)[keyof typeof analyticsEvents];
 
 export function trackEvent(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>) {
-  // Placeholder for Google Analytics, Vercel Analytics, or a future first-party event pipeline.
-  // Intended environment variables: NEXT_PUBLIC_GA_MEASUREMENT_ID, NEXT_PUBLIC_VERCEL_ANALYTICS_ID.
+  // No-op analytics bridge for limited MVP launch.
+  // Future setup can route events to Google Analytics, Vercel Analytics, or another provider.
+  // Optional env vars reserved for that work:
+  // NEXT_PUBLIC_GA_MEASUREMENT_ID, NEXT_PUBLIC_VERCEL_ANALYTICS_ID, NEXT_PUBLIC_ANALYTICS_PROVIDER.
   if (process.env.NODE_ENV === "development") {
     console.debug("[analytics]", event, properties ?? {});
   }

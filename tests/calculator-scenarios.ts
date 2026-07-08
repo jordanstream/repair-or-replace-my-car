@@ -1,5 +1,6 @@
 import { calculateRepairOrReplace, type CalculatorInput } from "../lib/calculator";
 import { calculatorAssumptions, safetyConcernLabels } from "../lib/calculator-constants";
+import { parseStoredCalculatorInput } from "../lib/storage";
 
 const base: CalculatorInput = {
   vehicleYear: 2015,
@@ -149,3 +150,17 @@ if (sanitized.options.some((option) => option.totalCost < 0 || option.monthlyEqu
   throw new Error("Sanitized negative inputs should not produce negative totals");
 }
 console.log("negative numeric input sanitization: passed");
+
+if (parseStoredCalculatorInput(null) !== null) {
+  throw new Error("Missing localStorage should not produce calculator input");
+}
+if (parseStoredCalculatorInput("{not valid json") !== null) {
+  throw new Error("Malformed localStorage JSON should not produce calculator input");
+}
+if (parseStoredCalculatorInput(JSON.stringify({ repairQuote: 1000 })) !== null) {
+  throw new Error("Partial localStorage payload should not produce calculator input");
+}
+if (!parseStoredCalculatorInput(JSON.stringify(base))) {
+  throw new Error("Valid localStorage payload should produce calculator input");
+}
+console.log("localStorage result parsing: passed");

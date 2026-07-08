@@ -23,11 +23,22 @@ npm run build
 
 ## Deploying to Vercel
 
+Recommended Vercel settings:
+
+- Framework preset: Next.js
+- Install command: `npm install`
+- Build command: `npm run build`
+- Development command: `npm run dev`
+- Output directory: use the Vercel default for Next.js
+
+Steps:
+
 1. Push the repository to GitHub.
 2. Import the repository in Vercel.
-3. Use the default Next.js framework settings.
-4. Set any future environment variables listed below.
-5. Deploy.
+3. Use the default Next.js framework settings above.
+4. Set `NEXT_PUBLIC_SITE_URL` to the deployed production URL.
+5. Optionally set analytics placeholders when a real provider is chosen.
+6. Deploy.
 
 ## Environment Variables
 
@@ -37,9 +48,10 @@ No real secrets are required for the MVP.
 NEXT_PUBLIC_SITE_URL=https://repairorreplacemycar.com
 NEXT_PUBLIC_GA_MEASUREMENT_ID=
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=
+NEXT_PUBLIC_ANALYTICS_PROVIDER=
 ```
 
-Analytics placeholders are in `lib/analytics.ts`. Event names are prepared for calculator start, completion, result type, external clicks, and print actions.
+Analytics placeholders are in `lib/analytics.ts`. Event names are prepared for calculator start, completion, result type, safety-warning results, external clicks, and print actions. The current utility is a safe no-op unless a provider is added later.
 
 ## Architecture
 
@@ -62,6 +74,8 @@ The MVP intentionally uses transparent estimates:
 - Current vehicle depreciation is not modeled.
 - Replacement depreciation reserve is a configurable estimate, not a market prediction.
 - Safety flags continue showing financial output but change the recommendation to professional safety review.
+- Results depend entirely on user-entered estimates. The app does not know exact vehicle values, repair quality, local labor rates, taxes, insurance premiums, financing offers, or future repair needs.
+- The `/results` page uses browser `localStorage` for this MVP. It is not shareable across browsers or devices, and clearing browser storage removes the saved estimate.
 
 ## Future Planned Integrations
 

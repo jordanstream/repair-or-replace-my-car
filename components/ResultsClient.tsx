@@ -4,24 +4,21 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { CostChart } from "@/components/CostChart";
+import { EstimateDisclaimer, safetyWarningText } from "@/components/EstimateDisclaimer";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ResultBadge } from "@/components/ui/ResultBadge";
 import { analyticsEvents, trackEvent } from "@/lib/analytics";
 import { calculateRepairOrReplace, type CalculatorInput } from "@/lib/calculator";
+import { parseStoredCalculatorInput } from "@/lib/storage";
 
 const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 function loadStoredInput() {
   if (typeof window === "undefined") return null;
 
-  try {
-    const stored = window.localStorage.getItem("repair-or-replace-input");
-    return stored ? (JSON.parse(stored) as CalculatorInput) : null;
-  } catch {
-    return null;
-  }
+  return parseStoredCalculatorInput(window.localStorage.getItem("repair-or-replace-input"));
 }
 
 function buildSearchUrl(engine: "google" | "yelp", input: CalculatorInput) {
@@ -38,7 +35,9 @@ export function ResultsClient() {
   useEffect(() => {
     if (!result) return;
     const event =
-      result.outcome === "repair"
+      result.outcome === "safety"
+        ? analyticsEvents.safetyWarningResult
+        : result.outcome === "repair"
         ? analyticsEvents.resultRepair
         : result.outcome === "replace"
           ? analyticsEvents.resultReplace
@@ -50,10 +49,14 @@ export function ResultsClient() {
     return (
       <Card className="p-8">
         <h1 className="text-3xl font-bold text-ink-950">No calculator results yet</h1>
-        <p className="mt-4 text-ink-700">Start the calculator to create a repair-versus-replacement estimate.</p>
+        <p className="mt-4 max-w-2xl leading-7 text-ink-700">
+          No saved calculation was found in this browser. Results are created from calculator entries stored locally on
+          your device for this MVP, so opening this page directly or clearing browser storage removes the saved estimate.
+        </p>
         <div className="mt-6">
           <Button href="/calculator">Start the Calculator</Button>
         </div>
+        <EstimateDisclaimer className="mt-6" />
       </Card>
     );
   }
@@ -69,8 +72,7 @@ export function ResultsClient() {
       </div>
       {result.safetyFlag ? (
         <Alert tone="danger">
-          This tool cannot evaluate vehicle safety. Have a qualified professional inspect the vehicle before making a
-          decision or continuing to drive it. Financial estimate only.
+          {safetyWarningText} Financial estimate only.
         </Alert>
       ) : null}
 
@@ -78,6 +80,9 @@ export function ResultsClient() {
         <ResultBadge outcome={result.outcome} />
         <h1 className="mt-5 text-2xl font-bold leading-tight text-ink-950 sm:text-3xl md:text-5xl">{result.headline}</h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-ink-700 sm:text-lg sm:leading-8">{result.summary}</p>
+        <div className="mt-5">
+          <EstimateDisclaimer />
+        </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <div>
             <p className="text-sm font-semibold text-ink-600">Confidence</p>

@@ -1,4 +1,5 @@
 import { CalculatorForm } from "@/components/CalculatorForm";
+import { EstimateDisclaimer } from "@/components/EstimateDisclaimer";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -21,11 +22,12 @@ export default function CalculatorPage() {
     <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mb-8 max-w-3xl">
-        <h1 className="text-4xl font-bold text-ink-950">Compare Your Options</h1>
+        <h1 className="text-4xl font-bold text-ink-950">Repair or Replace Car Calculator</h1>
         <p className="mt-4 text-lg leading-8 text-ink-700">
-          Enter your repair quote and replacement assumptions. The calculator runs locally in your browser and does not
-          store your information on a server.
+          Enter your repair quote, current vehicle assumptions, and replacement estimates. The calculator runs locally
+          in your browser and does not store your information on a server.
         </p>
+        <EstimateDisclaimer className="mt-6" />
       </div>
       <CalculatorForm />
     </main>

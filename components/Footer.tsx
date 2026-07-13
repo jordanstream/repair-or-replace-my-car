@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { siteConfig } from "@/lib/site";
 
 const links = [
   { href: "/calculator", label: "Calculator" },
@@ -23,6 +24,12 @@ export function Footer() {
         <p className="mt-6 max-w-3xl text-sm leading-6 text-ink-600">
           This tool provides educational estimates only. It does not replace advice from a qualified mechanic, financial
           professional, or safety inspector.
+        </p>
+        <p className="mt-4 text-sm leading-6 text-ink-600">
+          Contact:{" "}
+          <a className="font-semibold text-brand-700 underline underline-offset-4" href={`mailto:${siteConfig.contactEmail}`}>
+            {siteConfig.contactEmail}
+          </a>
         </p>
         <p className="mt-4 text-sm text-ink-600">&copy; {new Date().getFullYear()} Repair or Replace My Car.</p>
       </div>

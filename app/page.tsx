@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
   title: "Should You Repair or Replace Your Car?",
-  description: "Compare the likely cost of fixing your current vehicle versus replacing it.",
+  description: "Got a major repair quote? Compare estimated repair and replacement costs over 12, 24, or 36 months.",
   path: "/"
 });
 
@@ -27,19 +27,29 @@ const problems = [
 ];
 
 export default function HomePage() {
+  const previewItems = [
+    { label: "Repair and keep", detail: "Upfront repair cost" },
+    { label: "Replace with used", detail: "Estimated replacement cost" },
+    { label: "Replace with new", detail: "Monthly ownership changes" }
+  ];
+
   return (
     <main>
-      <section className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:items-center lg:px-8 lg:py-20">
+      <section className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:items-center lg:px-8 lg:py-20">
         <div>
           <h1 className="max-w-3xl text-4xl font-bold leading-tight text-ink-950 md:text-6xl">
             Should You Repair or Replace Your Car?
           </h1>
           <p className="mt-6 max-w-2xl text-xl leading-8 text-ink-700">
-            Compare the likely cost of fixing your current vehicle versus replacing it, so you can make a more informed
-            next decision.
+            Got a major repair quote? Compare the estimated cost of repairing your current car with replacing it used
+            or new before you make a decision.
+          </p>
+          <p className="mt-4 max-w-2xl leading-7 text-ink-700">
+            Repair or Replace My Car uses the numbers you enter to compare costs over time. It is an educational
+            estimate, not a prediction or professional recommendation.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button href="/calculator">Start the Calculator</Button>
+            <Button href="/calculator">Compare My Options</Button>
             <Button href="/how-it-works" variant="secondary">How the comparison works</Button>
           </div>
           <p className="mt-6 max-w-2xl text-sm leading-6 text-ink-600">
@@ -48,15 +58,37 @@ export default function HomePage() {
         </div>
         <div className="rounded-lg border border-line bg-white p-5 shadow-soft">
           <div className="grid gap-4">
-            {["Repair and keep", "Replace with used", "Replace with new"].map((label, index) => (
-              <div key={label} className="rounded-md border border-line p-4">
+            {previewItems.map((item, index) => (
+              <div key={item.label} className="rounded-md border border-line p-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-ink-950">{label}</span>
-                  <span className="tabular text-sm font-semibold text-brand-700">{index === 0 ? "$" : "$$$"}</span>
+                  <span className="font-semibold text-ink-950">{item.label}</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-500">Option {index + 1}</span>
                 </div>
+                <p className="mt-2 text-sm leading-6 text-ink-600">{item.detail}</p>
                 <div className="mt-4 h-3 rounded-full bg-slate-100">
-                  <div className="h-3 rounded-full bg-brand-600" style={{ width: `${52 + index * 16}%` }} />
+                  <div className="h-3 rounded-full bg-brand-600" style={{ width: `${62 - index * 8}%` }} />
                 </div>
+              </div>
+            ))}
+            <div className="rounded-md border border-dashed border-line bg-wash p-4 text-sm font-semibold text-ink-700">
+              Cost over time depends on your repair quote, replacement assumptions, and ownership costs.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-10">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 md:grid-cols-[0.8fr_1.2fr] lg:px-8">
+          <SectionHeader title="What You'll Get" intro="A focused comparison for a stressful repair-or-replace decision." />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              "Repair vs. replacement cost comparison",
+              "12, 24, or 36-month estimate",
+              "Confidence level and key cost drivers",
+              "Safety and reliability reminders"
+            ].map((item) => (
+              <div key={item} className="rounded-md border border-line bg-wash px-4 py-3 text-sm font-semibold text-ink-800">
+                {item}
               </div>
             ))}
           </div>
@@ -74,6 +106,24 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <Card className="p-6 md:p-8">
+          <h2 className="text-2xl font-bold text-ink-950">Built to help you compare, not pressure you</h2>
+          <div className="mt-5 grid gap-4 text-sm leading-6 text-ink-700 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              "No account required to use the calculator.",
+              "No dealer, lender, or repair-shop rankings in this MVP.",
+              "No hidden vendor recommendations or affiliate links.",
+              "Your calculator inputs stay in your browser for this MVP.",
+              "Estimates are based on the assumptions you enter.",
+              "Safety concerns should be reviewed by qualified professionals."
+            ].map((item) => (
+              <p key={item} className="rounded-md bg-wash p-4">{item}</p>
+            ))}
+          </div>
+        </Card>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
@@ -103,6 +153,7 @@ export default function HomePage() {
           </div>
           <div className="mt-8">
             <Button href="/calculator">Compare My Options</Button>
+            <Button href="/methodology" variant="ghost" className="ml-0 mt-3 sm:ml-3 sm:mt-0">Read the Methodology</Button>
           </div>
         </div>
       </section>

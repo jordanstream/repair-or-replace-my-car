@@ -1,4 +1,5 @@
 import { ContentPage } from "@/components/ContentPage";
+import { Button } from "@/components/ui/Button";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -25,6 +26,9 @@ export default function MethodologyPage() {
       <section>
         <h2 className="text-2xl font-bold text-ink-950">Before acting</h2>
         <p className="mt-3 leading-7">Get written repair estimates, ask what the repair does and does not fix, and compare realistic replacement costs before making a major repair, purchase, or safety decision.</p>
+        <div className="mt-5">
+          <Button href="/calculator">Compare My Options</Button>
+        </div>
       </section>
       <section>
         <h2 className="text-2xl font-bold text-ink-950">Future integrations</h2>

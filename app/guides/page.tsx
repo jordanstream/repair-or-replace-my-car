@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { guides } from "@/data/guides";
 import { pageMetadata } from "@/lib/metadata";
 
@@ -13,8 +14,12 @@ export default function GuidesPage() {
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <h1 className="text-4xl font-bold text-ink-950">Repair or Replace Guides</h1>
       <p className="mt-4 max-w-3xl text-lg leading-8 text-ink-700">
-        Practical, non-salesy guides for comparing repair bills with replacement costs.
+        Practical, non-salesy guides for comparing repair bills with replacement costs. Each guide is educational and
+        works best when paired with your own written repair estimate.
       </p>
+      <div className="mt-6">
+        <Button href="/calculator">Compare My Options</Button>
+      </div>
       <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {guides.map((guide) => (
           <Link key={guide.slug} href={`/guides/${guide.slug}`} className="rounded-lg border border-line bg-white p-6 shadow-sm hover:bg-brand-50">

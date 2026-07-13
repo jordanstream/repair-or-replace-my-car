@@ -13,9 +13,9 @@ export function Footer() {
   return (
     <footer className="border-t border-line bg-white">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap gap-x-6 gap-y-3">
+        <div className="grid gap-3 sm:flex sm:flex-wrap sm:gap-x-6">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} className="text-sm font-semibold text-ink-700 hover:text-brand-700">
+            <Link key={link.href} href={link.href} className="min-h-10 rounded-md py-2 text-sm font-semibold text-ink-700 hover:text-brand-700">
               {link.label}
             </Link>
           ))}

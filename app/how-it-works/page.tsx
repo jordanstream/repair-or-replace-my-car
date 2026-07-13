@@ -23,7 +23,7 @@ export default function HowItWorksPage() {
         <h2 className="text-2xl font-bold text-ink-950">3. Review the drivers</h2>
         <p className="mt-3 leading-7">The result shows total cost, confidence, the biggest factors, what could change the result, and safety reminders when relevant.</p>
       </section>
-      <Button href="/calculator">Start the Calculator</Button>
+      <Button href="/calculator">Compare My Options</Button>
     </ContentPage>
   );
 }

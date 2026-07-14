@@ -105,6 +105,36 @@ if (!zeroAprUsed || zeroAprUsed.monthlyLoanPayment !== zeroAprUsed.financedAmoun
 }
 console.log("0% APR loan calculation: passed");
 
+const veryHighRepairQuote = calculateRepairOrReplace({
+  ...base,
+  currentValue: 4500,
+  repairQuote: 30000,
+  additionalRepairs: 5000,
+  usableMonthsAfterRepair: 12,
+  usedPurchasePrice: 14000,
+  downPayment: 3000,
+  taxesAndFees: 1200
+});
+if (veryHighRepairQuote.outcome !== "replace") {
+  throw new Error("Very high repair quote should favor replacement when replacement assumptions are materially cheaper");
+}
+console.log("very high repair quote handling: passed");
+
+const negativeEquity = calculateRepairOrReplace({
+  ...base,
+  currentValue: 5000,
+  remainingLoanBalance: 12000,
+  repairQuote: 3500,
+  usedPurchasePrice: 18000,
+  downPayment: 2000,
+  taxesAndFees: 1200
+});
+const negativeEquityUsed = negativeEquity.options.find((option) => option.key === "used");
+if (!negativeEquityUsed || negativeEquityUsed.financedAmount !== 24200) {
+  throw new Error("Remaining loan balance greater than car value should roll negative equity into replacement path");
+}
+console.log("negative equity handling: passed");
+
 const shortLoan = calculateRepairOrReplace({
   ...base,
   loanTermMonths: 12,

@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ChecklistDownloadLink } from "@/components/ChecklistDownloadLink";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/Fields";
 import { analyticsEvents, trackEvent } from "@/lib/analytics";
@@ -62,7 +61,7 @@ export function ChecklistSignup({ placement }: { placement: "results" | "guide" 
       }
 
       setStatus("error");
-      setMessage(data.error ?? "Something went wrong. You can still download the checklist below.");
+      setMessage(data.error ?? "Something went wrong. Please try again, or email us directly if the form keeps failing.");
     } catch {
       setStatus("fallback");
       setMessage("We could not reach Kit, so we opened an email request instead.");
@@ -109,14 +108,6 @@ export function ChecklistSignup({ placement }: { placement: "results" | "guide" 
         We use Kit for checklist email delivery when connected. If Kit is unavailable, this falls back to an email
         request to {siteConfig.contactEmail}.
       </p>
-      <div className="mt-4">
-        <ChecklistDownloadLink
-          placement={placement}
-          className="inline-flex min-h-11 items-center rounded-md border border-line px-4 py-2 text-sm font-semibold text-ink-800 hover:bg-brand-50"
-        >
-          Download the checklist instead
-        </ChecklistDownloadLink>
-      </div>
     </section>
   );
 }

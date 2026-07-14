@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GuideCtaLink } from "@/components/GuideCtaLink";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FAQ } from "@/components/ui/FAQ";
@@ -33,7 +34,7 @@ export function GuidePage({ slug }: { slug: string }) {
         <h1 className="text-4xl font-bold text-ink-950 md:text-5xl">{guide.title}</h1>
         <p className="mt-5 text-xl leading-8 text-ink-700">{guide.directAnswer}</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button href="/calculator">Compare My Options</Button>
+          <GuideCtaLink guideSlug={guide.slug} placement="top" />
           <Button href="/methodology" variant="secondary">Read the Methodology</Button>
         </div>
 
@@ -90,7 +91,7 @@ export function GuidePage({ slug }: { slug: string }) {
             expected ownership costs are what make the decision personal.
           </p>
           <div className="mt-5">
-            <Button href="/calculator">Compare My Options</Button>
+            <GuideCtaLink guideSlug={guide.slug} placement="body" />
           </div>
         </section>
 

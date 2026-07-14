@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { GuideCtaLink } from "@/components/GuideCtaLink";
 import { guides } from "@/data/guides";
 import { pageMetadata } from "@/lib/metadata";
 
@@ -18,7 +18,7 @@ export default function GuidesPage() {
         works best when paired with your own written repair estimate.
       </p>
       <div className="mt-6">
-        <Button href="/calculator">Compare My Options</Button>
+        <GuideCtaLink guideSlug="guides-index" placement="index" />
       </div>
       <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {guides.map((guide) => (

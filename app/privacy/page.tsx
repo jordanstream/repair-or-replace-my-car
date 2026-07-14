@@ -38,17 +38,23 @@ export default function PrivacyPage() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold text-ink-950">Google Search Console and analytics</h2>
+        <h2 className="text-2xl font-bold text-ink-950">Google Search Console and Google Analytics</h2>
         <p className="mt-3 leading-7">
           We use Google Search Console to understand how pages appear in Google Search, including search queries,
           impressions, clicks, indexing status, and crawl issues. Search Console is not used to track individual
           calculator inputs.
         </p>
         <p className="mt-3 leading-7">
-          We may use Google Analytics or a similar analytics provider to understand general site usage, such as page
-          views, calculator starts, calculator completions, result types, safety-warning results, outbound search link
-          clicks, and print/save actions. If enabled, analytics events are used in aggregate to improve the site and do
-          not include your repair quote, vehicle identification number, or other sensitive personal details.
+          We use Google Analytics 4 through the Google tag to understand general site usage. Google Analytics may collect
+          information such as page URL, page title, referrer, approximate location, device and browser information,
+          session information, and interaction events. The site may send events such as calculator starts, calculator
+          completions, result type, safety-warning results, outbound search link clicks, and print/save actions.
+        </p>
+        <p className="mt-3 leading-7">
+          Analytics events are used in aggregate to improve the site and understand whether the calculator is useful.
+          We do not intentionally send your repair quote, vehicle identification number, contact details, or other
+          sensitive personal details to Google Analytics. Google may process analytics information according to its own
+          policies and controls.
         </p>
       </section>
 
@@ -56,9 +62,10 @@ export default function PrivacyPage() {
         <h2 className="text-2xl font-bold text-ink-950">Cookies and local storage</h2>
         <p className="mt-3 leading-7">
           The calculator uses browser local storage for the limited purpose of showing your results after you complete
-          the calculator. Analytics providers may use cookies or similar technologies if analytics is enabled. Your
-          browser settings may let you block or delete cookies and local storage, though doing so may affect site
-          functionality.
+          the calculator. Google Analytics may use cookies or similar technologies to measure visits and interactions.
+          Your browser settings may let you block or delete cookies and local storage, though doing so may affect site
+          functionality. Google also provides browser and account-level tools that may limit or opt out of some Google
+          Analytics measurement.
         </p>
       </section>
 
@@ -94,9 +101,9 @@ export default function PrivacyPage() {
         <h2 className="text-2xl font-bold text-ink-950">Your choices</h2>
         <p className="mt-3 leading-7">
           You can avoid entering information into the calculator, clear local storage in your browser, use private
-          browsing, disable cookies where your browser allows it, or contact us with privacy questions. Because the MVP
-          does not use accounts or a calculator database, we may not be able to identify calculator data that only exists
-          in your browser.
+          browsing, disable or delete cookies where your browser allows it, use available Google privacy controls, or
+          contact us with privacy questions. Because the MVP does not use accounts or a calculator database, we may not
+          be able to identify calculator data that only exists in your browser.
         </p>
       </section>
 

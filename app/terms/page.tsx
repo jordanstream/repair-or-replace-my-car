@@ -72,6 +72,16 @@ export default function TermsPage() {
       </section>
 
       <section>
+        <h2 className="text-2xl font-bold text-ink-950">Analytics and site measurement</h2>
+        <p className="mt-3 leading-7">
+          We may use Google Search Console, Google Analytics 4, hosting logs, and similar tools to understand search
+          visibility, page usage, calculator engagement, technical errors, and general site performance. Analytics data
+          is not a professional review of your vehicle, repair quote, finances, insurance, or purchasing decision. More
+          detail is provided in the privacy policy.
+        </p>
+      </section>
+
+      <section>
         <h2 className="text-2xl font-bold text-ink-950">Your responsibilities</h2>
         <p className="mt-3 leading-7">
           You are responsible for the accuracy of the information you enter, the assumptions you choose, and the repair,

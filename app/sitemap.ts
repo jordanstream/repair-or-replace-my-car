@@ -10,6 +10,7 @@ const staticRoutes = [
   "/guides",
   "/methodology",
   "/disclaimer",
+  "/affiliate-disclosure",
   "/privacy",
   "/terms"
 ];

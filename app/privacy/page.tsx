@@ -70,6 +70,16 @@ export default function PrivacyPage() {
       </section>
 
       <section>
+        <h2 className="text-2xl font-bold text-ink-950">Advertising and affiliate monetization</h2>
+        <p className="mt-3 leading-7">
+          Car Second Opinion does not currently use display advertising, Google AdSense, affiliate links, paid rankings,
+          sponsored placements, or vendor directories. If third-party ads or ad networks are added later, those vendors
+          may use cookies or similar technologies to serve, personalize, measure, or limit ads. We will update this
+          policy and related disclosures before enabling ad networks or monetized affiliate relationships.
+        </p>
+      </section>
+
+      <section>
         <h2 className="text-2xl font-bold text-ink-950">Email</h2>
         <p className="mt-3 leading-7">
           If you email us at{" "}

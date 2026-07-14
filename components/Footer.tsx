@@ -6,6 +6,7 @@ const links = [
   { href: "/guides", label: "Guides" },
   { href: "/methodology", label: "Methodology" },
   { href: "/disclaimer", label: "Disclaimer" },
+  { href: "/affiliate-disclosure", label: "Affiliate Disclosure" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" }
 ];

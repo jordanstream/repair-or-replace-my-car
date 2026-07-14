@@ -46,14 +46,14 @@ No real secrets are required for the MVP.
 
 ```bash
 NEXT_PUBLIC_SITE_URL=https://carsecondopinion.com
-NEXT_PUBLIC_GA_MEASUREMENT_ID=
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-89CL7WMDH1
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=
 NEXT_PUBLIC_ANALYTICS_PROVIDER=
 ```
 
 Google Search Console is used for indexing and search-performance reporting. Submit `https://carsecondopinion.com/sitemap.xml` in Search Console and keep `https://carsecondopinion.com/robots.txt` accessible.
 
-Google Analytics 4 should be used for interaction events. When `NEXT_PUBLIC_GA_MEASUREMENT_ID` is configured, `components/GoogleAnalytics.tsx` loads the Google tag and `lib/analytics.ts` sends the prepared events:
+Google Analytics 4 should be used for interaction events. `components/GoogleAnalytics.tsx` loads the Google tag using `G-89CL7WMDH1` by default, or `NEXT_PUBLIC_GA_MEASUREMENT_ID` if a different measurement ID is set. `lib/analytics.ts` sends the prepared events:
 
 - `calculator_started`
 - `calculator_completed`
@@ -65,7 +65,7 @@ Google Analytics 4 should be used for interaction events. When `NEXT_PUBLIC_GA_M
 - `external_replacement_link_clicked`
 - `print_results_clicked`
 
-Without `NEXT_PUBLIC_GA_MEASUREMENT_ID`, analytics remains safe and non-breaking.
+Analytics remains safe and non-breaking if a future provider is unavailable.
 
 ## Architecture
 

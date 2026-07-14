@@ -9,11 +9,11 @@ import { siteConfig } from "@/lib/site";
 
 export function ChecklistSignup({ placement }: { placement: "results" | "guide" | "footer" | "checklist" }) {
   const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "fallback" | "error">("idle");
+  const [message, setMessage] = useState("");
 
-  function requestChecklist(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    trackEvent(analyticsEvents.checklistEmailClicked, { placement });
-
+  function mailtoFallback() {
     const subject = "Send me the repair-vs-replace checklist";
     const body = [
       "Hi Car Second Opinion,",
@@ -25,6 +25,49 @@ export function ChecklistSignup({ placement }: { placement: "results" | "guide" 
     ].filter(Boolean).join("\n");
 
     window.location.href = `mailto:${siteConfig.contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
+  async function requestChecklist(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    trackEvent(analyticsEvents.checklistEmailClicked, { placement });
+    setStatus("loading");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/kit/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          placement,
+          company,
+          referrer: typeof window !== "undefined" ? window.location.href : ""
+        })
+      });
+
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (response.ok) {
+        setStatus("success");
+        setMessage("You're on the checklist list. Check your inbox for Kit's confirmation or checklist email.");
+        setEmail("");
+        return;
+      }
+
+      if (response.status === 503) {
+        setStatus("fallback");
+        setMessage("Kit is not connected yet, so we opened an email request instead.");
+        mailtoFallback();
+        return;
+      }
+
+      setStatus("error");
+      setMessage(data.error ?? "Something went wrong. You can still download the checklist below.");
+    } catch {
+      setStatus("fallback");
+      setMessage("We could not reach Kit, so we opened an email request instead.");
+      mailtoFallback();
+    }
   }
 
   return (
@@ -43,12 +86,28 @@ export function ChecklistSignup({ placement }: { placement: "results" | "guide" 
             onChange={(event) => setEmail(event.target.value)}
             placeholder="you@example.com"
             autoComplete="email"
+            required
           />
         </label>
-        <Button type="submit">Email Me the Checklist</Button>
+        <label className="hidden" aria-hidden="true">
+          Company
+          <input tabIndex={-1} autoComplete="off" value={company} onChange={(event) => setCompany(event.target.value)} />
+        </label>
+        <Button type="submit" disabled={status === "loading"}>
+          {status === "loading" ? "Sending..." : "Email Me the Checklist"}
+        </Button>
       </form>
+      {message ? (
+        <p
+          className={`mt-3 text-sm leading-6 ${status === "success" ? "text-success-700" : status === "error" ? "text-danger-700" : "text-ink-600"}`}
+          role="status"
+        >
+          {message}
+        </p>
+      ) : null}
       <p className="mt-3 text-xs leading-5 text-ink-600">
-        This opens your email app so you can request the checklist. No signup provider is connected yet.
+        We use Kit for checklist email delivery when connected. If Kit is unavailable, this falls back to an email
+        request to {siteConfig.contactEmail}.
       </p>
       <div className="mt-4">
         <ChecklistDownloadLink

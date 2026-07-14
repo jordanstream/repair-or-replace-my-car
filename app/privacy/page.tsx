@@ -81,7 +81,7 @@ export default function PrivacyPage() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold text-ink-950">Email</h2>
+        <h2 className="text-2xl font-bold text-ink-950">Email and checklist requests</h2>
         <p className="mt-3 leading-7">
           If you email us at{" "}
           <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>, we will receive your email
@@ -90,9 +90,16 @@ export default function PrivacyPage() {
           comfortable sharing it by email.
         </p>
         <p className="mt-3 leading-7">
-          Checklist request forms and the &quot;Email My Results&quot; action use your own email app. The checklist request may
-          send your email address to us only if you choose to send the message. The results email is a draft for you to
-          address and send yourself; Car Second Opinion does not receive that draft unless you choose to send it to us.
+          Checklist request forms may use Kit, our email provider, to collect your email address and send checklist or
+          follow-up emails you requested. Kit may process your email address, signup page, timing, and email engagement
+          according to its own privacy and email-delivery practices. You can unsubscribe from checklist emails using the
+          unsubscribe link included in those messages.
+        </p>
+        <p className="mt-3 leading-7">
+          If Kit is unavailable or not connected, checklist request forms may fall back to your own email app and create
+          a message addressed to {siteConfig.contactEmail}. The &quot;Email My Results&quot; action also uses your own email app
+          and creates a draft for you to address and send yourself. Car Second Opinion does not receive that results
+          draft unless you choose to send it to us.
         </p>
       </section>
 

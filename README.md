@@ -38,7 +38,8 @@ Steps:
 3. Use the default Next.js framework settings above.
 4. Set `NEXT_PUBLIC_SITE_URL` to the deployed production URL.
 5. Optionally set `NEXT_PUBLIC_GA_MEASUREMENT_ID` when Google Analytics 4 is ready.
-6. Deploy.
+6. Set Kit email variables when checklist email delivery is ready.
+7. Deploy.
 
 ## Environment Variables
 
@@ -49,7 +50,25 @@ NEXT_PUBLIC_SITE_URL=https://carsecondopinion.com
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-89CL7WMDH1
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=
 NEXT_PUBLIC_ANALYTICS_PROVIDER=
+KIT_API_KEY=
+KIT_FORM_ID=
 ```
+
+`KIT_API_KEY` is a server-only V4 API key from Kit. Do not expose it with a `NEXT_PUBLIC_` prefix. `KIT_FORM_ID` is the numeric Kit form ID for the checklist signup form. When these are missing, the checklist signup UI falls back to a `mailto:` request to `hello@carsecondopinion.com`.
+
+## Kit Free Setup
+
+Use Kit for checklist email capture and delivery:
+
+1. Create or log in to a free Kit account.
+2. Create an embedded form named `Major Car Repair Decision Checklist`.
+3. Add the checklist download link to the form incentive or first email: `https://carsecondopinion.com/downloads/major-car-repair-decision-checklist.txt`.
+4. In Kit developer settings, create a V4 API key.
+5. Find the form ID in Kit, or call Kit's `GET /v4/forms` endpoint with the V4 API key.
+6. Add `KIT_API_KEY` and `KIT_FORM_ID` to Vercel project environment variables for Production.
+7. Redeploy.
+
+The app posts checklist signups to `/api/kit/subscribe`, which creates or updates the Kit subscriber and then adds the email address to the configured Kit form. The browser never receives the Kit API key.
 
 Google Search Console is used for indexing and search-performance reporting. Submit `https://carsecondopinion.com/sitemap.xml` in Search Console and keep `https://carsecondopinion.com/robots.txt` accessible.
 

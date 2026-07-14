@@ -3,18 +3,26 @@ import { GuideCtaLink } from "@/components/GuideCtaLink";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FAQ } from "@/components/ui/FAQ";
+import { siteConfig } from "@/lib/site";
 import { getGuide } from "@/data/guides";
 
 export function GuidePage({ slug }: { slug: string }) {
   const guide = getGuide(slug);
   if (!guide) return null;
 
+  const canonicalUrl = `${siteConfig.url}/guides/${guide.slug}`;
+
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "Article",
       headline: guide.title,
-      description: guide.description
+      description: guide.description,
+      datePublished: guide.publishedDate,
+      dateModified: guide.lastReviewedDate,
+      author: { "@type": "Organization", name: "Car Second Opinion" },
+      publisher: { "@type": "Organization", name: "Car Second Opinion" },
+      mainEntityOfPage: canonicalUrl
     },
     {
       "@context": "https://schema.org",
@@ -32,11 +40,27 @@ export function GuidePage({ slug }: { slug: string }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <article className="text-ink-800">
         <h1 className="text-4xl font-bold text-ink-950 md:text-5xl">{guide.title}</h1>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm text-ink-600">
+          <span>By Car Second Opinion</span>
+          <span aria-hidden="true">|</span>
+          <span>
+            Last reviewed: <time dateTime={guide.lastReviewedDate}>July 14, 2026</time>
+          </span>
+        </div>
         <p className="mt-5 text-xl leading-8 text-ink-700">{guide.directAnswer}</p>
+        <div className="mt-6 space-y-4 leading-7 text-ink-700">
+          {guide.intro.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <GuideCtaLink guideSlug={guide.slug} placement="top" />
           <Button href="/methodology" variant="secondary">Read the Methodology</Button>
         </div>
+        <p className="mt-4 text-sm leading-6 text-ink-600">
+          Want to compare your own numbers? Use the Car Second Opinion calculator to compare repairing your current car
+          with replacing it used or new.
+        </p>
 
         <section className="mt-10 rounded-lg border border-line bg-wash p-5">
           <h2 className="text-2xl font-bold text-ink-950">Short answer</h2>
@@ -85,11 +109,14 @@ export function GuidePage({ slug }: { slug: string }) {
         </section>
 
         <section className="mt-10 rounded-lg border border-brand-100 bg-brand-50 p-5">
-          <h2 className="text-2xl font-bold text-ink-950">Compare your own numbers</h2>
+          <h2 className="text-2xl font-bold text-ink-950">What to do next</h2>
           <p className="mt-3 leading-7 text-ink-700">
-            A rule of thumb can help you slow down, but your repair quote, replacement budget, loan situation, and
-            expected ownership costs are what make the decision personal.
+            If you have a repair quote in hand, the next step is to compare it against the real cost of replacing the
+            car. The calculator can help you organize the numbers before you decide.
           </p>
+          <ul className="mt-4 space-y-3 leading-7 text-ink-700">
+            {guide.nextSteps.map((step) => <li key={step}>{step}</li>)}
+          </ul>
           <div className="mt-5">
             <GuideCtaLink guideSlug={guide.slug} placement="body" />
           </div>
@@ -116,11 +143,30 @@ export function GuidePage({ slug }: { slug: string }) {
           </div>
         </section>
 
-        <p className="mt-10 rounded-lg border border-line bg-wash p-5 text-sm leading-6 text-ink-700">
-          Plain-language disclaimer: this guide is educational only and is based on general decision factors. Repair or
-          Replace My Car is not a mechanic, lender, insurer, dealer, or financial advisor. Get written repair estimates,
-          compare realistic replacement costs, and ask qualified professionals about safety or major financial decisions.
-        </p>
+        <section className="mt-10 rounded-lg border border-line bg-white p-5">
+          <h2 className="text-2xl font-bold text-ink-950">About Car Second Opinion</h2>
+          <p className="mt-3 leading-7 text-ink-700">
+            Car Second Opinion helps drivers compare the estimated cost of repairing their current vehicle versus
+            replacing it used or new. The calculator uses the numbers you enter, including repair quote, vehicle value,
+            loan balance, and replacement assumptions. It does not diagnose mechanical problems or look up exact market
+            prices. The goal is to help you organize the decision before you talk with a mechanic, lender, dealer,
+            buyer, or other professional.
+          </p>
+        </section>
+
+        <section className="mt-10 rounded-lg border border-line bg-wash p-5 text-sm leading-6 text-ink-700">
+          <h2 className="text-base font-bold text-ink-950">Disclaimer</h2>
+          <p className="mt-2">
+            This guide is for educational purposes only and is based on general decision factors. It is not mechanical,
+            safety, legal, financial, insurance, or purchasing advice. Consider getting written repair estimates and
+            consulting qualified professionals before making a major repair or replacement decision.
+          </p>
+          <p className="mt-3">
+            Read more about <Link href="/methodology" className="font-semibold text-brand-700 hover:text-brand-800">how
+            the calculator works</Link> and the <Link href="/disclaimer" className="font-semibold text-brand-700 hover:text-brand-800">educational
+            disclaimer</Link>.
+          </p>
+        </section>
       </article>
     </main>
   );

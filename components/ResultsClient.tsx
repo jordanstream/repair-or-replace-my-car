@@ -68,7 +68,7 @@ export function ResultsClient() {
   return (
     <div className="space-y-8">
       <div className="print-only">
-        <p>Repair or Replace My Car financial estimate, generated from user-entered assumptions.</p>
+        <p>Car Second Opinion financial estimate, generated from user-entered assumptions.</p>
       </div>
       {result.safetyFlag ? (
         <Alert tone="danger">

@@ -45,7 +45,7 @@ export default function HomePage() {
             or new before you make a decision.
           </p>
           <p className="mt-4 max-w-2xl leading-7 text-ink-700">
-            Repair or Replace My Car uses the numbers you enter to compare costs over time. It is an educational
+            Car Second Opinion uses the numbers you enter to compare costs over time. It is an educational
             estimate, not a prediction or professional recommendation.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">

@@ -32,7 +32,7 @@ export function Footer() {
             {siteConfig.contactEmail}
           </a>
         </p>
-        <p className="mt-4 text-sm text-ink-600">&copy; {new Date().getFullYear()} Repair or Replace My Car.</p>
+        <p className="mt-4 text-sm text-ink-600">&copy; {new Date().getFullYear()} Car Second Opinion.</p>
       </div>
     </footer>
   );

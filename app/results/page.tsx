@@ -17,7 +17,7 @@ export default function ResultsPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "Repair or Replace My Car Results",
+    name: "Car Second Opinion Results",
     applicationCategory: "FinanceApplication",
     operatingSystem: "Any"
   };

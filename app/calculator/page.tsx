@@ -14,7 +14,7 @@ export default function CalculatorPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "Repair or Replace My Car Calculator",
+    name: "Car Second Opinion Calculator",
     applicationCategory: "FinanceApplication",
     operatingSystem: "Any",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }

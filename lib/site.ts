@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Repair or Replace My Car",
+  name: "Car Second Opinion",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://carsecondopinion.com",
   contactEmail: "hello@carsecondopinion.com",
   description:

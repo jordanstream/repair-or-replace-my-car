@@ -48,7 +48,8 @@ export default function PrivacyPage() {
           We use Google Analytics 4 through the Google tag to understand general site usage. Google Analytics may collect
           information such as page URL, page title, referrer, approximate location, device and browser information,
           session information, and interaction events. The site may send events such as calculator starts, calculator
-          completions, result type, safety-warning results, outbound search link clicks, and print/save actions.
+          completions, result type, safety-warning results, outbound search link clicks, checklist downloads, checklist
+          email request clicks, and email-results clicks.
         </p>
         <p className="mt-3 leading-7">
           Analytics events are used in aggregate to improve the site and understand whether the calculator is useful.
@@ -87,6 +88,11 @@ export default function PrivacyPage() {
           address and any information you choose to include. We use that information to read and respond to your message.
           Do not send sensitive financial, insurance, legal, medical, or vehicle-identifying information unless you are
           comfortable sharing it by email.
+        </p>
+        <p className="mt-3 leading-7">
+          Checklist request forms and the &quot;Email My Results&quot; action use your own email app. The checklist request may
+          send your email address to us only if you choose to send the message. The results email is a draft for you to
+          address and send yourself; Car Second Opinion does not receive that draft unless you choose to send it to us.
         </p>
       </section>
 

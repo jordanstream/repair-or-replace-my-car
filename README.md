@@ -61,16 +61,19 @@ Google Analytics 4 should be used for interaction events. `components/GoogleAnal
 - `result_replace`
 - `result_close_call`
 - `safety_warning_result`
+- `guide_cta_clicked`
+- `checklist_email_clicked`
+- `checklist_download_clicked`
+- `email_results_clicked`
 - `external_repair_search_clicked`
 - `external_replacement_link_clicked`
-- `print_results_clicked`
 
 Analytics remains safe and non-breaking if a future provider is unavailable.
 
 ## Architecture
 
 - `app/`: Next.js App Router routes, metadata, sitemap, robots, and pages.
-- `components/`: Reusable layout, form, result, chart, table, FAQ, and UI primitives.
+- `components/`: Reusable layout, form, result, chart, table, checklist, FAQ, and UI primitives.
 - `data/guides.ts`: Structured guide content used by the guide pages.
 - `lib/calculator.ts`: Client-side calculator formulas and recommendation logic.
 - `lib/calculator-constants.ts`: Central calculator assumptions and thresholds.
@@ -93,7 +96,7 @@ The MVP intentionally uses transparent estimates:
 
 ## Future Planned Integrations
 
-The code is organized so future APIs, analytics, affiliate links, email capture, local vendor matching, authentication, user accounts, and saved comparisons can be added later. Any affiliate relationship should be disclosed clearly before launch.
+The code is organized so future APIs, email-service integrations, affiliate links, local vendor matching, authentication, user accounts, and saved comparisons can be added later. Any affiliate relationship should be disclosed clearly before launch.
 
 ## Limitations
 

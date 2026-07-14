@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChecklistSignup } from "@/components/ChecklistSignup";
 import { siteConfig } from "@/lib/site";
 
 const links = [
@@ -15,6 +16,9 @@ export function Footer() {
   return (
     <footer className="border-t border-line bg-white">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-8 max-w-3xl">
+          <ChecklistSignup placement="footer" />
+        </div>
         <div className="grid gap-3 sm:flex sm:flex-wrap sm:gap-x-6">
           {links.map((link) => (
             <Link key={link.href} href={link.href} className="min-h-10 rounded-md py-2 text-sm font-semibold text-ink-700 hover:text-brand-700">

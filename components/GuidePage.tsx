@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChecklistSignup } from "@/components/ChecklistSignup";
 import { GuideCtaLink } from "@/components/GuideCtaLink";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -121,6 +122,10 @@ export function GuidePage({ slug }: { slug: string }) {
             <GuideCtaLink guideSlug={guide.slug} placement="body" />
           </div>
         </section>
+
+        <div className="mt-10">
+          <ChecklistSignup placement="guide" />
+        </div>
 
         <section className="mt-10">
           <h2 className="text-2xl font-bold text-ink-950">FAQ</h2>

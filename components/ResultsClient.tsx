@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { ChecklistSignup } from "@/components/ChecklistSignup";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { CostChart } from "@/components/CostChart";
 import { EstimateDisclaimer, safetyWarningText } from "@/components/EstimateDisclaimer";
@@ -25,6 +26,32 @@ function buildSearchUrl(engine: "google" | "yelp", input: CalculatorInput) {
   const query = `${input.repairCategory} repair shop ${input.zipCode ?? ""}`.trim();
   if (engine === "google") return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
   return `https://www.yelp.com/search?find_desc=${encodeURIComponent(`${input.repairCategory} repair`)}&find_loc=${encodeURIComponent(input.zipCode ?? "")}`;
+}
+
+function buildEmailResultsHref(input: CalculatorInput, result: ReturnType<typeof calculateRepairOrReplace>) {
+  const lines = [
+    "Car Second Opinion repair-vs-replace estimate",
+    "",
+    result.headline,
+    result.summary,
+    "",
+    `Confidence: ${result.confidence}`,
+    `Comparison period: ${input.comparisonMonths} months`,
+    `Lowest estimate: ${result.lowestOption.label}`,
+    "",
+    "Estimated totals:",
+    ...result.options.map((option) => `${option.label}: ${formatter.format(option.totalCost)} (${formatter.format(option.monthlyEquivalent)} monthly equivalent)`),
+    "",
+    "Three biggest drivers:",
+    ...result.drivers.map((driver) => `- ${driver}`),
+    "",
+    "Educational note: this estimate is based on user-entered assumptions. It is not mechanical, safety, legal, financial, insurance, or purchasing advice.",
+    "",
+    "Run or update the calculator:",
+    "https://carsecondopinion.com/calculator"
+  ];
+
+  return `mailto:?subject=${encodeURIComponent("My Car Second Opinion results")}&body=${encodeURIComponent(lines.join("\n"))}`;
 }
 
 export function ResultsClient() {
@@ -67,9 +94,6 @@ export function ResultsClient() {
 
   return (
     <div className="space-y-8">
-      <div className="print-only">
-        <p>Car Second Opinion financial estimate, generated from user-entered assumptions.</p>
-      </div>
       {result.safetyFlag ? (
         <Alert tone="danger">
           {safetyWarningText} Financial estimate only.
@@ -176,6 +200,8 @@ export function ResultsClient() {
         </p>
       </Card>
 
+      <ChecklistSignup placement="results" />
+
       <details className="rounded-lg border border-line bg-white p-6">
         <summary className="cursor-pointer text-xl font-bold text-ink-950">How we calculated this</summary>
         <div className="mt-4 space-y-3 leading-7 text-ink-700">
@@ -208,7 +234,7 @@ export function ResultsClient() {
             <>
               <a className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href={buildSearchUrl("google", input)} target="_blank" rel="noreferrer" onClick={() => trackEvent(analyticsEvents.externalRepairSearchClicked)}>Find shops for a written second estimate</a>
               <a className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href={buildSearchUrl("yelp", input)} target="_blank" rel="noreferrer" onClick={() => trackEvent(analyticsEvents.externalRepairSearchClicked)}>Search Yelp for repair shops near you</a>
-              <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/guides/is-a-car-worth-fixing">Questions to ask before approving repair</Link>
+              <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/guides/is-it-worth-getting-a-second-opinion-on-a-car-repair">Questions to ask before approving repair</Link>
               <Link className="rounded-md border border-line p-4 font-semibold text-ink-800 hover:bg-brand-50" href="/calculator">Adjust the repair estimate</Link>
             </>
           )}
@@ -217,15 +243,13 @@ export function ResultsClient() {
 
       <div className="no-print flex flex-col gap-3 sm:flex-row">
         <Button href="/calculator" variant="secondary">Start Over</Button>
-        <Button
-          type="button"
-          onClick={() => {
-            trackEvent(analyticsEvents.printResultsClicked);
-            window.print();
-          }}
+        <a
+          className="inline-flex min-h-11 items-center justify-center rounded-md border border-brand-600 bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+          href={buildEmailResultsHref(input, result)}
+          onClick={() => trackEvent(analyticsEvents.emailResultsClicked, { outcome: result.outcome, confidence: result.confidence })}
         >
-          Print / Save This Comparison
-        </Button>
+          Email My Results
+        </a>
       </div>
     </div>
   );

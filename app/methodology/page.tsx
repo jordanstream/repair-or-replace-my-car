@@ -32,7 +32,7 @@ export default function MethodologyPage() {
       </section>
       <section>
         <h2 className="text-2xl font-bold text-ink-950">Future integrations</h2>
-        <p className="mt-3 leading-7">Affiliate relationships, analytics, email capture, market-value APIs, and vendor matching may be added later. Any affiliate relationship should be clearly disclosed before launch.</p>
+        <p className="mt-3 leading-7">Affiliate relationships, email-service integrations, market-value APIs, and vendor matching may be added later. Current checklist and results email actions use the visitor&apos;s own email app rather than a site database. Any affiliate relationship should be clearly disclosed before launch.</p>
       </section>
     </ContentPage>
   );

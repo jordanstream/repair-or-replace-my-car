@@ -2,6 +2,7 @@ import { CalculatorForm } from "@/components/CalculatorForm";
 import { EstimateDisclaimer } from "@/components/EstimateDisclaimer";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { TrustPreview } from "@/components/TrustPreview";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -45,6 +46,9 @@ export default function CalculatorPage() {
           <Button href="/methodology" variant="secondary">Read the Methodology</Button>
         </div>
       </Card>
+      <div className="mb-8">
+        <TrustPreview />
+      </div>
       <CalculatorForm />
     </main>
   );

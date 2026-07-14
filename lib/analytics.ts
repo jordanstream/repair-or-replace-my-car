@@ -6,6 +6,9 @@ export const analyticsEvents = {
   resultCloseCall: "result_close_call",
   safetyWarningResult: "safety_warning_result",
   guideCtaClicked: "guide_cta_clicked",
+  checklistEmailClicked: "checklist_email_clicked",
+  checklistDownloadClicked: "checklist_download_clicked",
+  emailResultsClicked: "email_results_clicked",
   externalRepairSearchClicked: "external_repair_search_clicked",
   externalReplacementLinkClicked: "external_replacement_link_clicked",
   printResultsClicked: "print_results_clicked"

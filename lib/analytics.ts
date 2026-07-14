@@ -12,12 +12,24 @@ export const analyticsEvents = {
 
 export type AnalyticsEvent = (typeof analyticsEvents)[keyof typeof analyticsEvents];
 
+declare global {
+  interface Window {
+    gtag?: (
+      command: "event",
+      eventName: string,
+      parameters?: Record<string, string | number | boolean>
+    ) => void;
+  }
+}
+
 export function trackEvent(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>) {
-  // No-op analytics bridge for limited MVP launch.
-  // Future setup can route events to Google Analytics, Vercel Analytics, or another provider.
-  // Optional env vars reserved for that work:
-  // NEXT_PUBLIC_GA_MEASUREMENT_ID, NEXT_PUBLIC_VERCEL_ANALYTICS_ID, NEXT_PUBLIC_ANALYTICS_PROVIDER.
+  const eventProperties = properties ?? {};
+
+  if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && window.gtag) {
+    window.gtag("event", event, eventProperties);
+  }
+
   if (process.env.NODE_ENV === "development") {
-    console.debug("[analytics]", event, properties ?? {});
+    console.debug("[analytics]", event, eventProperties);
   }
 }

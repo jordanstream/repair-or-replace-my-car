@@ -37,7 +37,7 @@ Steps:
 2. Import the repository in Vercel.
 3. Use the default Next.js framework settings above.
 4. Set `NEXT_PUBLIC_SITE_URL` to the deployed production URL.
-5. Optionally set analytics placeholders when a real provider is chosen.
+5. Optionally set `NEXT_PUBLIC_GA_MEASUREMENT_ID` when Google Analytics 4 is ready.
 6. Deploy.
 
 ## Environment Variables
@@ -45,13 +45,27 @@ Steps:
 No real secrets are required for the MVP.
 
 ```bash
-NEXT_PUBLIC_SITE_URL=https://repairorreplacemycar.com
+NEXT_PUBLIC_SITE_URL=https://carsecondopinion.com
 NEXT_PUBLIC_GA_MEASUREMENT_ID=
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=
 NEXT_PUBLIC_ANALYTICS_PROVIDER=
 ```
 
-Analytics placeholders are in `lib/analytics.ts`. Event names are prepared for calculator start, completion, result type, safety-warning results, external clicks, and print actions. The current utility is a safe no-op unless a provider is added later.
+Google Search Console is used for indexing and search-performance reporting. Submit `https://carsecondopinion.com/sitemap.xml` in Search Console and keep `https://carsecondopinion.com/robots.txt` accessible.
+
+Google Analytics 4 should be used for interaction events. When `NEXT_PUBLIC_GA_MEASUREMENT_ID` is configured, `components/GoogleAnalytics.tsx` loads the Google tag and `lib/analytics.ts` sends the prepared events:
+
+- `calculator_started`
+- `calculator_completed`
+- `result_repair`
+- `result_replace`
+- `result_close_call`
+- `safety_warning_result`
+- `external_repair_search_clicked`
+- `external_replacement_link_clicked`
+- `print_results_clicked`
+
+Without `NEXT_PUBLIC_GA_MEASUREMENT_ID`, analytics remains safe and non-breaking.
 
 ## Architecture
 

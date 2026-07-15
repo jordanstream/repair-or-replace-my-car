@@ -88,8 +88,8 @@ export function ChecklistSignup({ placement }: { placement: "results" | "guide" 
             required
           />
         </label>
-        <label className="hidden" aria-hidden="true">
-          Company
+        <label className="sr-only" aria-hidden="true">
+          Company, leave this field blank
           <input tabIndex={-1} autoComplete="off" value={company} onChange={(event) => setCompany(event.target.value)} />
         </label>
         <Button type="submit" disabled={status === "loading"}>

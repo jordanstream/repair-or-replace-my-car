@@ -1,7 +1,7 @@
 export function TrustPreview({ compact = false }: { compact?: boolean }) {
   const items = [
     {
-      title: "How this estimate works",
+      title: "Comparison basis",
       copy: "The calculator compares the numbers you enter for repairing your car with replacing it used or new over 12, 24, or 36 months."
     },
     {

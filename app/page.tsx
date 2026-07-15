@@ -162,11 +162,14 @@ export default function HomePage() {
         <SectionHeader title="Guides" intro="Balanced explainers for the repair decisions people search for most often." />
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {guides.slice(0, 6).map((guide) => (
-            <Link key={guide.slug} href={`/guides/${guide.slug}`} className="rounded-lg border border-line bg-white p-5 shadow-sm hover:bg-brand-50">
+            <Link key={guide.slug} href={`/guides/${guide.slug}`} className="rounded-lg border border-line bg-white p-5 shadow-sm transition-colors hover:bg-brand-50">
               <h3 className="font-bold text-ink-950">{guide.title}</h3>
               <p className="mt-2 text-sm leading-6 text-ink-700">{guide.description}</p>
             </Link>
           ))}
+        </div>
+        <div className="mt-8">
+          <Button href="/guides" variant="secondary">View all guides</Button>
         </div>
       </section>
     </main>

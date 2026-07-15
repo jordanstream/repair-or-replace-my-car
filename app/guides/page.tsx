@@ -38,7 +38,7 @@ export default function GuidesPage() {
                   <Link
                     key={guide.slug}
                     href={`/guides/${guide.slug}`}
-                    className="rounded-lg border border-line bg-white p-6 shadow-sm transition-colors hover:bg-brand-50"
+                    className="rounded-lg border border-line bg-white p-5 shadow-sm transition-colors hover:bg-brand-50 sm:p-6"
                   >
                     <h3 className="text-xl font-bold text-ink-950">{guide.title}</h3>
                     <p className="mt-3 leading-7 text-ink-700">{guide.description}</p>
@@ -60,6 +60,16 @@ export default function GuidesPage() {
           For major repair, safety, legal, insurance, financing, or purchasing decisions, consider written estimates and
           qualified professional advice.
         </p>
+      </section>
+      <section className="mt-8 rounded-lg border border-brand-100 bg-brand-50 p-5">
+        <h2 className="text-xl font-bold text-ink-950">Ready to compare your own numbers?</h2>
+        <p className="mt-3 leading-7 text-ink-700">
+          Start with your repair quote and replacement assumptions, then review the cost comparison before deciding what
+          to do next.
+        </p>
+        <div className="mt-5">
+          <GuideCtaLink guideSlug="guides-index" placement="index" />
+        </div>
       </section>
     </main>
   );

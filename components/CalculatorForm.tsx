@@ -212,10 +212,14 @@ export function CalculatorForm() {
         </section>
       ) : null}
 
-      <div className="mt-8 flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:justify-between">
-        <Button type="button" variant="secondary" disabled={step === 1} onClick={() => setStep((value) => Math.max(1, value - 1))}>
-          Back
-        </Button>
+      <div className="mt-8 flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:justify-between">
+        {step > 1 ? (
+          <Button type="button" variant="secondary" onClick={() => setStep((value) => Math.max(1, value - 1))}>
+            Back
+          </Button>
+        ) : (
+          <span aria-hidden="true" className="hidden sm:block" />
+        )}
         {step < 3 ? (
           <Button type="button" onClick={() => { if (step === 1) trackEvent(analyticsEvents.calculatorStarted); setStep((value) => Math.min(3, value + 1)); }}>
             Continue

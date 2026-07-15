@@ -12,6 +12,8 @@ export default function AffiliateDisclosurePage() {
   return (
     <ContentPage
       title="Affiliate Disclosure"
+      lastUpdated="July 15, 2026"
+      showBottomLinks
       intro="Car Second Opinion does not currently use affiliate links, paid rankings, sponsored placements, or display advertising."
     >
       <section>

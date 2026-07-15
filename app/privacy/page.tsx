@@ -12,6 +12,8 @@ export default function PrivacyPage() {
   return (
     <ContentPage
       title="Privacy Policy"
+      lastUpdated="July 15, 2026"
+      showBottomLinks
       intro="Car Second Opinion is designed as a lightweight educational tool. The calculator does not require an account and does not store your calculation on our servers."
     >
       <section>

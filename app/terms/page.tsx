@@ -12,6 +12,8 @@ export default function TermsPage() {
   return (
     <ContentPage
       title="Terms of Use"
+      lastUpdated="July 15, 2026"
+      showBottomLinks
       intro="Use Car Second Opinion as an educational decision-support tool, not as a substitute for professional advice."
     >
       <section>

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChecklistSignup } from "@/components/ChecklistSignup";
 import { siteConfig } from "@/lib/site";
 
@@ -12,13 +15,20 @@ const links = [
   { href: "/terms", label: "Terms" }
 ];
 
+const formlessPaths = new Set(["/disclaimer", "/privacy", "/terms", "/affiliate-disclosure"]);
+
 export function Footer() {
+  const pathname = usePathname();
+  const showChecklistSignup = !formlessPaths.has(pathname);
+
   return (
     <footer className="border-t border-line bg-white">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-8 max-w-3xl">
-          <ChecklistSignup placement="footer" />
-        </div>
+        {showChecklistSignup ? (
+          <div className="mb-8 max-w-3xl">
+            <ChecklistSignup placement="footer" />
+          </div>
+        ) : null}
         <div className="grid gap-3 sm:flex sm:flex-wrap sm:gap-x-6">
           {links.map((link) => (
             <Link key={link.href} href={link.href} className="min-h-10 rounded-md py-2 text-sm font-semibold text-ink-700 hover:text-brand-700">

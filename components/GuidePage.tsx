@@ -41,9 +41,9 @@ export function GuidePage({ slug }: { slug: string }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <article className="text-ink-800">
         <h1 className="text-4xl font-bold text-ink-950 md:text-5xl">{guide.title}</h1>
-        <div className="mt-4 flex flex-wrap gap-3 text-sm text-ink-600">
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-600">
           <span>By Car Second Opinion</span>
-          <span aria-hidden="true">|</span>
+          <span aria-hidden="true" className="text-ink-400">|</span>
           <span>
             Last reviewed: <time dateTime={guide.lastReviewedDate}>July 14, 2026</time>
           </span>
@@ -54,16 +54,16 @@ export function GuidePage({ slug }: { slug: string }) {
             <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <GuideCtaLink guideSlug={guide.slug} placement="top" />
-          <Button href="/methodology" variant="secondary">Read the Methodology</Button>
-        </div>
         <p className="mt-4 text-sm leading-6 text-ink-600">
           Want to compare your own numbers? Use the Car Second Opinion calculator to compare repairing your current car
           with replacing it used or new.
         </p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <GuideCtaLink guideSlug={guide.slug} placement="top" />
+          <Button href="/methodology" variant="secondary">Read the Methodology</Button>
+        </div>
 
-        <section className="mt-10 rounded-lg border border-line bg-wash p-5">
+        <section className="mt-10 rounded-lg border-l-4 border-brand-600 bg-brand-50 p-5">
           <h2 className="text-2xl font-bold text-ink-950">Short answer</h2>
           <p className="mt-3 leading-7 text-ink-700">{guide.summary}</p>
         </section>
@@ -140,15 +140,16 @@ export function GuidePage({ slug }: { slug: string }) {
             {guide.related.map((relatedSlug) => {
               const related = getGuide(relatedSlug);
               return related ? (
-                <Link key={related.slug} href={`/guides/${related.slug}`} className="rounded-md border border-line bg-white p-4 font-semibold text-ink-800 hover:bg-brand-50">
-                  {related.title}
+                <Link key={related.slug} href={`/guides/${related.slug}`} className="rounded-lg border border-line bg-white p-4 transition-colors hover:bg-brand-50">
+                  <span className="block font-semibold text-ink-950">{related.title}</span>
+                  <span className="mt-2 block text-sm leading-6 text-ink-700">{related.description}</span>
                 </Link>
               ) : null;
             })}
           </div>
         </section>
 
-        <section className="mt-10 rounded-lg border border-line bg-white p-5">
+        <section className="mt-10 rounded-lg border border-line bg-wash p-5">
           <h2 className="text-2xl font-bold text-ink-950">About Car Second Opinion</h2>
           <p className="mt-3 leading-7 text-ink-700">
             Car Second Opinion helps drivers compare the estimated cost of repairing their current vehicle versus
@@ -159,7 +160,7 @@ export function GuidePage({ slug }: { slug: string }) {
           </p>
         </section>
 
-        <section className="mt-10 rounded-lg border border-line bg-wash p-5 text-sm leading-6 text-ink-700">
+        <section className="mt-10 rounded-lg border border-line bg-white p-5 text-sm leading-6 text-ink-700">
           <h2 className="text-base font-bold text-ink-950">Disclaimer</h2>
           <p className="mt-2">
             This guide is for educational purposes only and is based on general decision factors. It is not mechanical,

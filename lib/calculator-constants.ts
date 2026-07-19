@@ -1,9 +1,7 @@
 export const calculatorAssumptions = {
-  currentOwnershipReserveMonthly: 95,
-  remainingLoanBalanceMonthlyDivisor: 24,
-  usedReplacementDepreciationReserveAnnualRate: 0.12,
-  newReplacementDepreciationReserveAnnualRate: 0.18,
-  closeCallThresholdPercent: 0.12,
+  // A decision-confidence setting, not an industry benchmark.
+  closeCallThresholdPercent: 0.1,
+  closeCallMinimumDollars: 750,
   highMileageThreshold: 150000,
   repairToValueConcernRatio: 0.65,
   highRepairPerUsableMonth: 325,

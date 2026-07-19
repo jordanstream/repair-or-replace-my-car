@@ -40,8 +40,8 @@ function buildEmailResultsHref(input: CalculatorInput, result: ReturnType<typeof
     `Comparison period: ${input.comparisonMonths} months`,
     `Lowest estimate: ${result.lowestOption.label}`,
     "",
-    "Estimated totals:",
-    ...result.options.map((option) => `${option.label}: ${formatter.format(option.totalCost)} (${formatter.format(option.monthlyEquivalent)} monthly equivalent)`),
+    "Estimated cash paid during the comparison period:",
+    ...result.options.map((option) => `${option.label}: ${formatter.format(option.totalCost)} (${formatter.format(option.monthlyEquivalent)} monthly cash-flow equivalent)`),
     "",
     "Three biggest drivers:",
     ...result.drivers.map((driver) => `- ${driver}`),
@@ -172,13 +172,17 @@ export function ResultsClient() {
 
   const replacementFocused = result.outcome === "replace";
   const nextStep = outcomeNextStep(result, input);
-  const usedOption = result.options.find((option) => option.key === "used");
-  const newOption = result.options.find((option) => option.key === "new");
   const verificationSteps = buildVerificationSteps(input, result);
   const showShopQuestions =
     result.quoteConfidenceLimited ||
     result.repairCostToValueRatio >= calculatorAssumptions.repairToValueConcernRatio;
   const hasFinancing = result.options.some((option) => (option.financedAmount ?? 0) > 0);
+  const replacementMissingEndingValue = result.options.some(
+    (option) => option.key !== "repair" && option.endingVehicleValue === undefined
+  );
+  const currentEquityDescription = result.equity >= 0
+    ? `Positive equity of ${formatter.format(result.equity)}`
+    : `Negative equity of ${formatter.format(Math.abs(result.equity))}`;
 
   return (
     <div className="space-y-8">
@@ -193,6 +197,12 @@ export function ResultsClient() {
         <Alert tone="warning">
           This comparison uses the estimate you entered. The result may change if another inspection identifies a
           different repair or price.
+        </Alert>
+      ) : null}
+
+      {replacementMissingEndingValue ? (
+        <Alert tone="warning">
+          Vehicle depreciation is not included because no ending value was entered. This may make replacement appear less expensive.
         </Alert>
       ) : null}
 
@@ -215,7 +225,7 @@ export function ResultsClient() {
             <p className="mt-1 tabular text-2xl font-bold text-ink-950">{input.comparisonMonths} months</p>
           </div>
           <div>
-            <p className="text-sm font-semibold text-ink-600">Lowest estimate</p>
+            <p className="text-sm font-semibold text-ink-600">Lowest estimated cash flow</p>
             <p className="mt-1 text-2xl font-bold text-ink-950">{result.lowestOption.label}</p>
           </div>
         </div>
@@ -223,7 +233,8 @@ export function ResultsClient() {
 
       <section aria-labelledby="cost-heading" className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="p-6">
-          <h2 id="cost-heading" className="text-2xl font-bold text-ink-950">Estimated cost comparison</h2>
+          <h2 id="cost-heading" className="text-2xl font-bold text-ink-950">Estimated cash-flow comparison</h2>
+          <p className="mt-2 text-sm leading-6 text-ink-600">Compares estimated cash paid during the selected period. It is not a complete ownership-cost calculation.</p>
           <div className="mt-6">
             <CostChart options={result.options} lowestKey={result.lowestOption.key} />
           </div>
@@ -234,8 +245,7 @@ export function ResultsClient() {
       <Card className="p-6">
         <h2 className="text-2xl font-bold text-ink-950">What you entered</h2>
         <p className="mt-3 leading-7 text-ink-700">
-          These totals are calculated from the estimates you entered. They are not quotes, market values, or safety
-          findings.
+          This comparison uses your estimates. The current equity figure is shown separately from cash paid.
         </p>
         <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -243,22 +253,20 @@ export function ResultsClient() {
             <dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(input.repairQuote)}</dd>
           </div>
           <div>
-            <dt className="text-sm font-semibold text-ink-600">Expected added repairs</dt>
-            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(input.additionalRepairs)}</dd>
+            <dt className="text-sm font-semibold text-ink-600">Future maintenance and repairs</dt>
+            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(input.expectedFutureMaintenance)}</dd>
           </div>
           <div>
-            <dt className="text-sm font-semibold text-ink-600">Used replacement total</dt>
-            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{usedOption ? formatter.format(usedOption.totalCost) : "Not compared"}</dd>
+            <dt className="text-sm font-semibold text-ink-600">Current loan payoff</dt>
+            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(input.currentLoanPayoff)}</dd>
           </div>
           <div>
-            <dt className="text-sm font-semibold text-ink-600">New replacement total</dt>
-            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{newOption ? formatter.format(newOption.totalCost) : "Not compared"}</dd>
+            <dt className="text-sm font-semibold text-ink-600">Current vehicle equity</dt>
+            <dd className="tabular mt-1 text-xl font-bold text-ink-950">{currentEquityDescription}</dd>
           </div>
         </dl>
         <p className="mt-4 text-sm leading-6 text-ink-600">
-          Repair total includes the quote, expected additional repairs, remaining-loan exposure when entered, and an
-          ownership reserve. Replacement totals include financing during the comparison period, taxes and fees, ownership
-          deltas, equity or negative equity, and a simple depreciation reserve.
+          Repair cash flow includes the quote, entered future maintenance and repairs, and current loan payments due during the period. Replacement cash flow includes entered upfront cash, modeled replacement-loan payments, and entered monthly differences. Ending value, depreciation, remaining balance, and equity are shown separately.
         </p>
       </Card>
 
@@ -267,17 +275,34 @@ export function ResultsClient() {
           <Card key={option.key} className={`print-break-inside-avoid p-5 ${option.key === result.lowestOption.key ? "border-success-700" : ""}`}>
             <h2 className="text-xl font-bold text-ink-950">{option.label}</h2>
             <dl className="mt-4 space-y-3">
+              <div><dt className="text-sm font-semibold text-ink-600">Estimated cash paid during the period</dt><dd className="tabular mt-1 text-3xl font-bold text-ink-950">{formatter.format(option.totalCost)}</dd></div>
               <div><dt className="text-sm font-semibold text-ink-600">Upfront cash</dt><dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(option.upfrontCash)}</dd></div>
-              <div><dt className="text-sm font-semibold text-ink-600">Monthly equivalent</dt><dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(option.monthlyEquivalent)}</dd></div>
-              <div><dt className="text-sm font-semibold text-ink-600">Total over {input.comparisonMonths} months</dt><dd className="tabular mt-1 text-3xl font-bold text-ink-950">{formatter.format(option.totalCost)}</dd></div>
+              <div><dt className="text-sm font-semibold text-ink-600">Monthly cash-flow equivalent</dt><dd className="tabular mt-1 text-xl font-bold text-ink-950">{formatter.format(option.monthlyEquivalent)}</dd></div>
+              <div><dt className="text-sm font-semibold text-ink-600">Estimated vehicle value at the end</dt><dd className="tabular mt-1 text-xl font-bold text-ink-950">{option.endingVehicleValue === undefined ? "Not estimated" : formatter.format(option.endingVehicleValue)}</dd></div>
+              <div><dt className="text-sm font-semibold text-ink-600">Estimated remaining loan balance at the end</dt><dd className="tabular mt-1 text-xl font-bold text-ink-950">{option.remainingLoanBalanceAtEnd === undefined ? "Not estimated" : formatter.format(option.remainingLoanBalanceAtEnd)}</dd></div>
+              <div><dt className="text-sm font-semibold text-ink-600">Estimated vehicle equity at the end</dt><dd className="tabular mt-1 text-xl font-bold text-ink-950">{option.endingEquity === undefined ? "Not estimated" : formatter.format(option.endingEquity)}</dd></div>
+              <div><dt className="text-sm font-semibold text-ink-600">Estimated depreciation</dt><dd className="tabular mt-1 text-xl font-bold text-ink-950">{option.depreciationEstimate === undefined ? "Not estimated" : formatter.format(option.depreciationEstimate)}</dd></div>
             </dl>
-            <p className="mt-3 text-xs leading-5 text-ink-600">Monthly equivalent is the total estimate divided by the comparison period. It is not the same as a loan payment.</p>
+            <p className="mt-3 text-xs leading-5 text-ink-600">Monthly cash-flow equivalent is cash paid divided by the comparison period. It is not a loan payment or complete ownership cost.</p>
             <ul className="mt-4 space-y-2 text-sm leading-6 text-ink-700">
               {option.drivers.map((driver) => <li key={driver}>{driver}</li>)}
             </ul>
           </Card>
         ))}
       </section>
+
+      <Card className="p-6">
+        <h2 className="text-2xl font-bold text-ink-950">Assumptions and values not included</h2>
+        {input.expectedFutureMaintenance === 0 ? (
+          <p className="mt-4 font-semibold leading-7 text-ink-800">No additional future maintenance or repairs were included. This may make keeping the current car appear less expensive.</p>
+        ) : null}
+        {replacementMissingEndingValue ? (
+          <p className="mt-4 font-semibold leading-7 text-ink-800">Vehicle depreciation is not included because no ending value was entered. This may make replacement appear less expensive.</p>
+        ) : null}
+        <ul className="mt-4 list-disc space-y-2 pl-5 leading-7 text-ink-700">
+          {[...new Set(result.options.flatMap((option) => option.assumptionsNotIncluded))].map((assumption) => <li key={assumption}>{assumption}</li>)}
+        </ul>
+      </Card>
 
       <section className="grid gap-6 lg:grid-cols-2">
         <Card className="p-6">
@@ -319,12 +344,12 @@ export function ResultsClient() {
         {hasFinancing ? (
           <Card className="p-6">
             <h2 className="text-xl font-bold text-ink-950">A manageable payment is not always the least expensive option.</h2>
-            <p className="mt-3 leading-7 text-ink-700">Compare the full financing and ownership cost, not only the monthly payment.</p>
+            <p className="mt-3 leading-7 text-ink-700">Compare cash paid, the remaining loan balance, and the vehicle value you may have at the end—not only the monthly payment.</p>
           </Card>
         ) : null}
         <Card className="p-6">
           <h2 className="text-xl font-bold text-ink-950">Replacing a vehicle involves more than the purchase price.</h2>
-          <p className="mt-3 leading-7 text-ink-700">This comparison includes entered down payment, loan payments during the period, taxes and fees, ownership-cost changes, equity or negative equity, and a simple depreciation reserve. Verify every assumption with current quotes.</p>
+          <p className="mt-3 leading-7 text-ink-700">This cash-flow comparison includes entered down payment, loan payments during the period, taxes and fees, monthly changes, and current-car equity or negative equity. Ending value and depreciation are shown separately when entered.</p>
         </Card>
         {input.wholeVehicleCondition !== "no" ? (
           <Card className="p-6">
@@ -416,9 +441,10 @@ export function ResultsClient() {
       >
         <summary className="cursor-pointer text-xl font-bold text-ink-950">How we calculated this</summary>
         <div className="mt-4 space-y-3 leading-7 text-ink-700">
-          <p>Repair cost includes the repair quote, expected additional repairs, a current ownership reserve, and estimated remaining loan exposure.</p>
-          <p>Replacement cost includes down payment, financed payments during the comparison period, upfront taxes and fees, monthly ownership deltas, equity or negative equity, and a simple depreciation reserve.</p>
-          <p>Recommendation logic weighs total cost, repair-to-value ratio, repair cost per usable month, mileage, future repairs, reliability importance, vehicle-use importance, equity, and safety uncertainty.</p>
+          <p>The headline compares estimated cash paid during the selected period. It does not combine loan payments and depreciation into one economic-cost total.</p>
+          <p>The repair path includes the quote, user-entered future maintenance and repairs, and current monthly payments for the lesser of the comparison period or payments remaining.</p>
+          <p>The replacement path applies current-car equity to financing, includes entered upfront cash and replacement payments during the period, then shows ending loan balance, ending value, equity, and depreciation separately when they can be estimated.</p>
+          <p>Loan payments include principal and interest. Principal can build equity, so a loan payment is not identical to an ownership expense.</p>
         </div>
       </details>
 

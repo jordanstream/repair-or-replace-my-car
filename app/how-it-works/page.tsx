@@ -12,15 +12,15 @@ export default function HowItWorksPage() {
   const steps = [
     {
       title: "Enter your current vehicle and repair situation",
-      copy: "You provide your current value estimate, loan balance, mileage, repair quote, expected additional repairs, and safety uncertainty."
+      copy: "You provide the current value and loan details, mileage, repair quote, expected future maintenance and repairs, and safety uncertainty."
     },
     {
       title: "Add replacement assumptions",
-      copy: "You estimate purchase price, down payment, APR, loan term, taxes, fees, and monthly ownership changes. No external vehicle-value or dealer data is used."
+      copy: "You estimate purchase price, down payment, APR, loan term, taxes, fees, monthly changes, and—optionally—ending vehicle value. No external vehicle-value or dealer data is used."
     },
     {
       title: "Review the drivers",
-      copy: "The result shows total cost, confidence, the biggest factors, what could change the result, and safety reminders when relevant."
+      copy: "The result compares estimated cash paid, then shows ending value, remaining loan balance, equity, depreciation, uncertainty, and safety reminders separately."
     }
   ];
 
@@ -41,7 +41,7 @@ export default function HowItWorksPage() {
         <h2 className="text-2xl font-bold text-ink-950">What you&apos;ll need before starting</h2>
         <ul className="mt-4 space-y-2 leading-7">
           <li>Your written repair quote or best estimate.</li>
-          <li>Your current vehicle value estimate and any remaining loan balance.</li>
+          <li>Your current vehicle value, loan payoff, monthly payment, and payments remaining.</li>
           <li>Realistic replacement purchase, financing, tax, fee, insurance, and maintenance assumptions.</li>
         </ul>
       </section>

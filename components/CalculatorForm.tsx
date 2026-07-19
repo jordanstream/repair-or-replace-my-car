@@ -31,7 +31,9 @@ const defaults: CalculatorInput = {
   model: "",
   mileage: 0,
   currentValue: 0,
-  remainingLoanBalance: 0,
+  currentLoanPayoff: 0,
+  currentMonthlyPayment: 0,
+  currentPaymentsRemaining: 0,
   safeToDrive: "yes",
   safetyConcerns: Object.fromEntries(Object.keys(safetyConcernLabels).map((key) => [key, "no"])) as Record<string, ThreeWay>,
   repairCategory: "Transmission",
@@ -41,13 +43,15 @@ const defaults: CalculatorInput = {
   secondShopConfirmed: undefined,
   wholeVehicleCondition: undefined,
   firstMajorRepair: "yes",
-  additionalRepairs: 0,
+  expectedFutureMaintenance: 0,
   usableMonthsAfterRepair: 0,
   reliabilityImportance: "medium",
   essentialVehicleUse: false,
   replacementPreference: "both",
   usedPurchasePrice: 0,
   newPurchasePrice: 0,
+  usedEndingValue: undefined,
+  newEndingValue: undefined,
   downPayment: 0,
   apr: 0,
   loanTermMonths: 0,
@@ -99,6 +103,10 @@ export function CalculatorForm() {
     update(key, (value === "" ? 0 : Math.max(min, numberValue(value))) as CalculatorInput[K]);
   }
 
+  function optionalNumericUpdate(key: "usedEndingValue" | "newEndingValue", value: string) {
+    update(key, value === "" ? undefined : Math.max(0, numberValue(value)));
+  }
+
   function showValidationError(message: string, fieldId: string) {
     setFormError(message);
     setInvalidFieldId(fieldId);
@@ -113,13 +121,13 @@ export function CalculatorForm() {
     if (stepToValidate === 1) {
       if (form.vehicleYear < 1950) return ["Enter a vehicle year of 1950 or later.", "vehicle-year"] as const;
       if (form.currentValue <= 0) return ["Enter your current estimated vehicle value.", "current-value"] as const;
+      if (form.currentLoanPayoff > 0 && form.currentMonthlyPayment <= 0) return ["Enter your current monthly payment.", "current-monthly-payment"] as const;
+      if (form.currentLoanPayoff > 0 && form.currentPaymentsRemaining < 1) return ["Enter the number of monthly payments remaining.", "current-payments-remaining"] as const;
+      if (form.currentLoanPayoff === 0 && (form.currentMonthlyPayment > 0 || form.currentPaymentsRemaining > 0)) return ["Enter the current loan payoff amount, or set the other current-loan fields to $0.", "current-loan-payoff"] as const;
     }
     if (stepToValidate === 2) {
       if (form.repairQuote <= 0) return ["Enter the repair estimate you received.", "repair-quote"] as const;
       if (form.usableMonthsAfterRepair < 1) return ["Enter at least 1 expected usable month after repair.", "usable-months"] as const;
-      if (form.wholeVehicleCondition === "yes" && form.additionalRepairs <= 0) {
-        return ["Enter the known amount for the other repairs, or choose Not sure.", "additional-repairs"] as const;
-      }
     }
     if (stepToValidate === 3) {
       if (form.replacementPreference !== "new" && form.usedPurchasePrice <= 0) return ["Enter a used replacement purchase price.", "used-price"] as const;
@@ -217,8 +225,10 @@ export function CalculatorForm() {
               <Field label="Mileage"><TextInput type="number" min="0" value={form.mileage || ""} onChange={(e) => numericUpdate("mileage", e.target.value)} /></Field>
               <Field label="Make"><TextInput value={form.make} onChange={(e) => update("make", e.target.value)} placeholder="Toyota" /></Field>
               <Field label="Model"><TextInput value={form.model} onChange={(e) => update("model", e.target.value)} placeholder="Camry" /></Field>
-              <Field label="Current estimated vehicle value"><TextInput id="current-value" type="number" min="0" value={form.currentValue || ""} aria-invalid={invalidFieldId === "current-value"} onChange={(e) => numericUpdate("currentValue", e.target.value)} /></Field>
-              <Field label="Remaining loan balance"><TextInput type="number" min="0" value={form.remainingLoanBalance || ""} onChange={(e) => numericUpdate("remainingLoanBalance", e.target.value)} /></Field>
+              <Field label="Estimated current vehicle value" helper="Use a realistic trade-in or private-sale estimate."><TextInput id="current-value" type="number" min="0" value={form.currentValue || ""} aria-invalid={invalidFieldId === "current-value"} onChange={(e) => numericUpdate("currentValue", e.target.value)} /></Field>
+              <Field label="Current loan payoff amount" helper="Enter $0 if you do not have a loan on this vehicle."><TextInput id="current-loan-payoff" type="number" min="0" value={form.currentLoanPayoff || ""} aria-invalid={invalidFieldId === "current-loan-payoff"} onChange={(e) => numericUpdate("currentLoanPayoff", e.target.value)} /></Field>
+              <Field label="Current monthly payment" helper="Enter $0 if you do not have a current vehicle loan."><TextInput id="current-monthly-payment" type="number" min="0" value={form.currentMonthlyPayment || ""} aria-invalid={invalidFieldId === "current-monthly-payment"} onChange={(e) => numericUpdate("currentMonthlyPayment", e.target.value)} /></Field>
+              <Field label="Number of monthly payments remaining" helper="Use the remaining payment count from your lender, not the original loan term."><TextInput id="current-payments-remaining" type="number" min="0" step="1" value={form.currentPaymentsRemaining || ""} aria-invalid={invalidFieldId === "current-payments-remaining"} onChange={(e) => numericUpdate("currentPaymentsRemaining", e.target.value)} /></Field>
             </div>
             <div className="mt-6">
               <RadioGroup label="Is the vehicle currently safe to drive?" name="safeToDrive" options={threeWayOptions} value={form.safeToDrive} onChange={(value) => update("safeToDrive", value as ThreeWay)} />
@@ -253,10 +263,8 @@ export function CalculatorForm() {
             </div>
 
             <div className="mt-8 grid gap-6">
-              <RadioGroup label="Did a broader inspection identify other major repairs likely within the next 12 months?" name="wholeVehicleCondition" options={concernOptions} value={form.wholeVehicleCondition ?? ""} onChange={(value) => setForm((current) => ({ ...current, wholeVehicleCondition: value as ThreeWay, additionalRepairs: value === "yes" ? current.additionalRepairs : 0 }))} />
-              {form.wholeVehicleCondition === "yes" ? (
-                <Field label="Known additional near-term repair amount" helper="Enter only work already identified. The amount is included in the repair path."><TextInput id="additional-repairs" type="number" min="0" value={form.additionalRepairs || ""} aria-invalid={invalidFieldId === "additional-repairs"} onChange={(e) => numericUpdate("additionalRepairs", e.target.value)} /></Field>
-              ) : null}
+              <RadioGroup label="Did a broader inspection identify other major repairs likely within the next 12 months?" name="wholeVehicleCondition" options={concernOptions} value={form.wholeVehicleCondition ?? ""} onChange={(value) => update("wholeVehicleCondition", value as ThreeWay)} />
+              <Field label="Expected future maintenance and repairs" helper="Enter maintenance and other repairs you expect during the comparison period. Do not include the repair quote entered above."><TextInput id="expected-future-maintenance" type="number" min="0" value={form.expectedFutureMaintenance} onChange={(e) => numericUpdate("expectedFutureMaintenance", e.target.value)} /></Field>
               <RadioGroup label="Is this the first major repair in the past 12 months?" name="firstMajorRepair" options={threeWayOptions} value={form.firstMajorRepair} onChange={(value) => update("firstMajorRepair", value as ThreeWay)} />
               <RadioGroup label="How important is reliability for your household?" name="reliability" options={[{ label: "Low", value: "low" }, { label: "Medium", value: "medium" }, { label: "High", value: "high" }]} value={form.reliabilityImportance} onChange={(value) => update("reliabilityImportance", value as CalculatorInput["reliabilityImportance"])} />
               <RadioGroup label="Is the vehicle needed for work, caregiving, school, or long-distance commuting?" name="essential" options={[{ label: "Yes", value: "yes" }, { label: "No", value: "no" }]} value={form.essentialVehicleUse ? "yes" : "no"} onChange={(value) => update("essentialVehicleUse", value === "yes")} />
@@ -283,6 +291,14 @@ export function CalculatorForm() {
               <Field label="Estimated sales tax, registration, and dealer-fee total" helper="Counted as upfront cash, not added to the financed amount."><TextInput type="number" min="0" value={form.taxesAndFees || ""} onChange={(e) => numericUpdate("taxesAndFees", e.target.value)} /></Field>
               <Field label="ZIP code for optional search links" helper="Optional. Used only to create outbound search links."><TextInput inputMode="numeric" maxLength={10} value={form.zipCode} onChange={(e) => update("zipCode", e.target.value)} /></Field>
             </div>
+            <details className="mt-6 rounded-lg border border-line bg-wash p-5">
+              <summary className="cursor-pointer font-semibold text-ink-950">Advanced assumptions</summary>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-700">Optional ending-value estimates let us show depreciation and end-of-period equity separately. They do not change the cash-flow total.</p>
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                {form.replacementPreference !== "new" ? <Field label="Estimated vehicle value at the end of the comparison period" helper="Used replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" value={form.usedEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("usedEndingValue", e.target.value)} /></Field> : null}
+                {form.replacementPreference !== "used" ? <Field label="Estimated vehicle value at the end of the comparison period" helper="New replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" value={form.newEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("newEndingValue", e.target.value)} /></Field> : null}
+              </div>
+            </details>
           </section>
         ) : null}
 

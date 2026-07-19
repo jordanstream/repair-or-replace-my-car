@@ -6,13 +6,13 @@ export function ComparisonTable({ options, lowestKey }: { options: OptionCost[];
   return (
     <div className="overflow-x-auto rounded-lg border border-line bg-white">
       <table className="min-w-full divide-y divide-line text-left text-sm">
-        <caption className="sr-only">Estimated cost comparison by option</caption>
+        <caption className="sr-only">Estimated cash paid during the comparison period by option</caption>
         <thead className="bg-wash">
           <tr>
             <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Option</th>
             <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Upfront cash</th>
-            <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Estimated total</th>
-            <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Monthly equivalent</th>
+            <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Estimated cash paid</th>
+            <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Monthly cash-flow equivalent</th>
             <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Note</th>
           </tr>
         </thead>
@@ -23,7 +23,7 @@ export function ComparisonTable({ options, lowestKey }: { options: OptionCost[];
               <td className="tabular px-4 py-4 text-ink-800">{formatter.format(option.upfrontCash)}</td>
               <td className="tabular px-4 py-4 text-ink-800">{formatter.format(option.totalCost)}</td>
               <td className="tabular px-4 py-4 text-ink-800">{formatter.format(option.monthlyEquivalent)}</td>
-              <td className="px-4 py-4 text-ink-700">{option.key === lowestKey ? "Lowest estimated cost" : "Compare assumptions carefully"}</td>
+              <td className="px-4 py-4 text-ink-700">{option.key === lowestKey ? "Lowest estimated cash flow" : "Compare assumptions carefully"}</td>
             </tr>
           ))}
         </tbody>

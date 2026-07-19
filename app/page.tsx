@@ -147,7 +147,7 @@ export default function HomePage() {
               {["Repair and Keep", "Replace with Used", "Replace with New"].map((option) => (
                 <Card key={option} className="p-5">
                   <h3 className="font-bold text-ink-950">{option}</h3>
-                  <p className="mt-3 text-sm leading-6 text-ink-700">Total cost, monthly equivalent, and the assumptions behind the estimate.</p>
+                  <p className="mt-3 text-sm leading-6 text-ink-700">Estimated cash paid, separate loan-and-value details, and the assumptions behind the comparison.</p>
                 </Card>
               ))}
             </div>

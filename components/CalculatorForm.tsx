@@ -295,8 +295,8 @@ export function CalculatorForm() {
               <summary className="cursor-pointer font-semibold text-ink-950">Advanced assumptions</summary>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-700">Optional ending-value estimates let us show depreciation and end-of-period equity separately. They do not change the cash-flow total.</p>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {form.replacementPreference !== "new" ? <Field label="Estimated vehicle value at the end of the comparison period" helper="Used replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" value={form.usedEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("usedEndingValue", e.target.value)} /></Field> : null}
-                {form.replacementPreference !== "used" ? <Field label="Estimated vehicle value at the end of the comparison period" helper="New replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" value={form.newEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("newEndingValue", e.target.value)} /></Field> : null}
+                {form.replacementPreference !== "new" ? <Field label="Estimated vehicle value at the end of the comparison period" helper="Used replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" aria-label="Used replacement estimated vehicle value at the end of the comparison period" value={form.usedEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("usedEndingValue", e.target.value)} /></Field> : null}
+                {form.replacementPreference !== "used" ? <Field label="Estimated vehicle value at the end of the comparison period" helper="New replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" aria-label="New replacement estimated vehicle value at the end of the comparison period" value={form.newEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("newEndingValue", e.target.value)} /></Field> : null}
               </div>
             </details>
           </section>

@@ -11,82 +11,91 @@ export const metadata = pageMetadata({
 
 export default function MethodologyPage() {
   return (
-    <ContentPage title="Methodology" intro="The calculator organizes user-entered assumptions into a financial comparison. It does not verify a repair diagnosis or predict what a vehicle will do next.">
+    <ContentPage title="Methodology" intro="The calculator organizes user-entered estimates into a cash-flow comparison. It does not verify a diagnosis, predict future repairs, or calculate complete economic ownership cost.">
       <section className="rounded-lg border border-brand-100 bg-brand-50 p-5">
-        <h2 className="text-2xl font-bold text-ink-950">What this comparison means</h2>
+        <h2 className="text-2xl font-bold text-ink-950">What the headline comparison means</h2>
         <p className="mt-3 leading-7">
-          Car Second Opinion starts with the written or verbal repair estimate you enter. It does not determine a fair
-          repair price, inspect the vehicle, or confirm that the diagnosis is correct. The result is decision support,
-          not mechanical, safety, legal, insurance, purchasing, or personalized financial advice.
+          The headline compares estimated cash paid during the selected 12-, 24-, or 36-month period. It uses the values
+          the user enters. It is decision support—not mechanical, safety, legal, insurance, purchasing, or personalized
+          financial advice—and it should not be read as a complete cost of ownership.
         </p>
       </section>
 
       <section className="rounded-lg border border-line bg-white p-5">
-        <h2 className="text-2xl font-bold text-ink-950">Repair path</h2>
+        <h2 className="text-2xl font-bold text-ink-950">Repair-and-keep cash flow</h2>
         <p className="mt-3 leading-7">
-          The repair total includes the repair estimate entered, any known additional repairs entered, an ownership
-          reserve of ${calculatorAssumptions.currentOwnershipReserveMonthly} per month, and estimated remaining-loan
-          exposure during the selected comparison period. Loan exposure is modeled as the entered balance divided by
-          {` ${calculatorAssumptions.remainingLoanBalanceMonthlyDivisor} months, then multiplied by the comparison period and capped at the entered balance.`}
+          The repair path adds the entered repair quote, expected future maintenance and repairs, and current vehicle
+          loan payments due during the comparison period. Current loan payments equal the entered monthly payment
+          multiplied by the lesser of the comparison months or the number of payments remaining.
         </p>
         <p className="mt-3 leading-7">
-          Upfront repair cash is the repair estimate plus any known additional repair amount. The monthly equivalent is
-          the repair total divided by 12, 24, or 36 months. It is not a bill or predicted monthly payment.
-        </p>
-      </section>
-
-      <section className="rounded-lg border border-line bg-white p-5">
-        <h2 className="text-2xl font-bold text-ink-950">Replacement path</h2>
-        <p className="mt-3 leading-7">
-          The financed amount starts with the entered purchase price, adds negative equity when the remaining loan is
-          greater than the entered vehicle value, subtracts positive equity and the down payment, and never goes below
-          zero. Entered taxes, registration, and dealer fees are counted as upfront cash and are not also financed.
-        </p>
-        <p className="mt-3 leading-7">
-          The total includes the down payment, taxes and fees, amortized loan payments that fall within the comparison
-          period, entered monthly insurance, fuel, and maintenance differences, plus a simple depreciation reserve. The
-          reserve is {Math.round(calculatorAssumptions.usedReplacementDepreciationReserveAnnualRate * 100)}% of purchase
-          price per year for a used replacement and {Math.round(calculatorAssumptions.newReplacementDepreciationReserveAnnualRate * 100)}% for a new replacement. It is a transparent scenario assumption, not a market-value prediction.
+          If expected future maintenance and repairs is $0, no automatic reserve is substituted. The result warns that
+          this may make keeping the current vehicle appear less expensive. The calculator does not project the current
+          vehicle’s ending value or loan payoff because the inputs are not enough to do that accurately.
         </p>
       </section>
 
       <section className="rounded-lg border border-line bg-white p-5">
-        <h2 className="text-2xl font-bold text-ink-950">Upfront cash, monthly equivalent, and total cost</h2>
+        <h2 className="text-2xl font-bold text-ink-950">Current vehicle equity and replacement financing</h2>
         <p className="mt-3 leading-7">
-          These are different concepts. Upfront cash is the amount modeled as due at the start. Total estimated cost is
-          the sum of modeled costs during the chosen period. Monthly equivalent is total estimated cost divided by the
-          number of months. It should not be read as a lender payment because it can include upfront costs, ownership
-          changes, and the depreciation reserve.
+          Current vehicle equity equals estimated current vehicle value minus current loan payoff. Positive equity is
+          treated as value available toward the replacement. Negative equity is added to the estimated replacement
+          financing, so an unpaid current-car payoff does not disappear from the replacement scenario.
+        </p>
+        <p className="mt-3 leading-7">
+          Replacement cash flow includes the entered down payment, taxes and fees, modeled replacement-loan payments
+          during the comparison period, and entered monthly insurance, fuel, and maintenance differences. Taxes and fees
+          are treated as upfront cash and are not also added to the financed amount.
+        </p>
+      </section>
+
+      <section className="rounded-lg border border-line bg-white p-5">
+        <h2 className="text-2xl font-bold text-ink-950">Loan payments, balances, and equity</h2>
+        <p className="mt-3 leading-7">
+          Loan payments include both principal and interest. Principal payments can build vehicle equity and are not
+          identical to an ownership expense. For replacement loans, the calculator uses the entered price, down payment,
+          equity, APR, and term to estimate payments and the remaining balance at the end of the comparison period.
+        </p>
+        <p className="mt-3 leading-7">
+          Upfront cash, monthly cash-flow equivalent, remaining loan balance, vehicle value, and vehicle equity are shown
+          as separate categories. They should not be added together without a complete economic-cost model.
+        </p>
+      </section>
+
+      <section className="rounded-lg border border-line bg-white p-5">
+        <h2 className="text-2xl font-bold text-ink-950">Ending value and depreciation</h2>
+        <p className="mt-3 leading-7">
+          Replacement depreciation is only estimated when the user enters an ending vehicle value. It equals purchase
+          price minus ending value and is clamped at $0, so the calculator never reports negative depreciation. Ending
+          equity equals the entered ending value minus the estimated replacement-loan balance at that time.
+        </p>
+        <p className="mt-3 leading-7">
+          Depreciation and ending equity are displayed separately and do not change the headline cash-flow total. When
+          no ending value is entered, depreciation is excluded and the result warns that replacement may appear less
+          expensive. The replacement total is not presented as complete ownership cost.
         </p>
       </section>
 
       <section className="rounded-lg border border-line bg-white p-5">
         <h2 className="text-2xl font-bold text-ink-950">Close calls and uncertainty</h2>
         <p className="mt-3 leading-7">
-          A result is labeled a close call when the repair and lowest replacement totals differ by no more than
-          {` ${Math.round(calculatorAssumptions.closeCallThresholdPercent * 100)}% of the larger total.`} Quote-confidence
-          answers never change the repair amount or financial outcome. A missing itemized estimate, unclear testing, or
-          lack of a second confirmation limits confidence and changes the verification guidance. Safety uncertainty
-          overrides the repair-or-replace label so the user sees a professional-review warning first.
+          The calculator compares repair cash flow with the lowest replacement cash flow. A close call is reported when
+          the absolute difference is no more than the larger total multiplied by {Math.round(calculatorAssumptions.closeCallThresholdPercent * 100)}%,
+          or {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(calculatorAssumptions.closeCallMinimumDollars)}, whichever is greater.
+          This threshold is a decision-confidence setting, not an industry standard.
+        </p>
+        <p className="mt-3 leading-7">
+          Quote-confidence answers do not change the entered repair amount. Safety uncertainty overrides the financial
+          label so the result asks for professional review first.
         </p>
       </section>
 
       <section className="rounded-lg border border-line bg-white p-5">
-        <h2 className="text-2xl font-bold text-ink-950">Costs and facts not included</h2>
+        <h2 className="text-2xl font-bold text-ink-950">What can change the result</h2>
         <p className="mt-3 leading-7">
-          The calculator does not include a mechanic’s inspection, repair-price verification, exact vehicle value,
-          repair warranty value, downtime, rental transportation, exact loan payoff schedule for the current car, local
-          tax calculation, unentered insurance or fuel changes, future market value, or repairs that the user did not
-          enter. Any of these may change the real-world decision.
-        </p>
-      </section>
-
-      <section className="rounded-lg border border-line bg-white p-5">
-        <h2 className="text-2xl font-bold text-ink-950">Why past repair spending is separate</h2>
-        <p className="mt-3 leading-7">
-          Money already spent cannot be recovered, so it is generally treated as a sunk cost. The calculator compares
-          future costs from today forward. Prior work can still provide useful context about vehicle condition, but the
-          amount already paid does not make either future option cheaper.
+          Unknown future repairs, resale values, financing terms, taxes, insurance, fuel costs, maintenance, repair
+          warranties, downtime, and transportation needs may change the outcome. The calculator does not inspect the
+          vehicle, verify a repair price, look up market values, or obtain lender and insurer quotes.
         </p>
       </section>
 
@@ -94,7 +103,8 @@ export default function MethodologyPage() {
         <h2 className="text-2xl font-bold text-ink-950">Before acting</h2>
         <p className="mt-3 leading-7">
           Verify the diagnosis, itemized estimate, repair warranty, other near-term work, replacement price, financing,
-          insurance, taxes, and fees that matter to your situation. Financial comparisons should not override safety.
+          current payoff, vehicle values, insurance, taxes, and fees that matter to your situation. Financial comparisons
+          should not override safety.
         </p>
         <div className="mt-5"><Button href="/calculator">Compare my options</Button></div>
       </section>

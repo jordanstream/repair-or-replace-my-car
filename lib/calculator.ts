@@ -13,7 +13,9 @@ export type CalculatorInput = {
   model: string;
   mileage: number;
   currentValue: number;
-  remainingLoanBalance: number;
+  currentLoanPayoff: number;
+  currentMonthlyPayment: number;
+  currentPaymentsRemaining: number;
   safeToDrive: ThreeWay;
   safetyConcerns: Record<string, ThreeWay>;
   repairCategory: string;
@@ -23,13 +25,15 @@ export type CalculatorInput = {
   secondShopConfirmed?: QuoteConfirmation;
   wholeVehicleCondition?: ThreeWay;
   firstMajorRepair: ThreeWay;
-  additionalRepairs: number;
+  expectedFutureMaintenance: number;
   usableMonthsAfterRepair: number;
   reliabilityImportance: ReliabilityImportance;
   essentialVehicleUse: boolean;
   replacementPreference: ReplacementPreference;
   usedPurchasePrice: number;
   newPurchasePrice: number;
+  usedEndingValue?: number;
+  newEndingValue?: number;
   downPayment: number;
   apr: number;
   loanTermMonths: number;
@@ -50,7 +54,11 @@ export type OptionCost = {
   financedAmount?: number;
   monthlyLoanPayment?: number;
   loanPaymentMonths?: number;
-  depreciationReserve?: number;
+  endingVehicleValue?: number;
+  remainingLoanBalanceAtEnd?: number;
+  endingEquity?: number;
+  depreciationEstimate?: number;
+  assumptionsNotIncluded: string[];
   drivers: string[];
 };
 
@@ -99,12 +107,16 @@ function sanitizeInput(input: CalculatorInput): CalculatorInput {
     vehicleYear: Math.max(input.vehicleYear, 1950),
     mileage: Math.max(input.mileage, 0),
     currentValue: Math.max(input.currentValue, 0),
-    remainingLoanBalance: Math.max(input.remainingLoanBalance, 0),
+    currentLoanPayoff: Math.max(input.currentLoanPayoff, 0),
+    currentMonthlyPayment: Math.max(input.currentMonthlyPayment, 0),
+    currentPaymentsRemaining: Math.max(Math.round(input.currentPaymentsRemaining), 0),
     repairQuote: Math.max(input.repairQuote, 0),
-    additionalRepairs: Math.max(input.additionalRepairs, 0),
+    expectedFutureMaintenance: Math.max(input.expectedFutureMaintenance, 0),
     usableMonthsAfterRepair: Math.max(input.usableMonthsAfterRepair, 1),
     usedPurchasePrice: Math.max(input.usedPurchasePrice, 0),
     newPurchasePrice: Math.max(input.newPurchasePrice, 0),
+    usedEndingValue: input.usedEndingValue === undefined ? undefined : Math.max(input.usedEndingValue, 0),
+    newEndingValue: input.newEndingValue === undefined ? undefined : Math.max(input.newEndingValue, 0),
     downPayment: Math.max(input.downPayment, 0),
     apr: Math.max(input.apr, 0),
     loanTermMonths: Math.max(input.loanTermMonths, 1),
@@ -112,12 +124,19 @@ function sanitizeInput(input: CalculatorInput): CalculatorInput {
   };
 }
 
+function remainingLoanBalance(principal: number, aprPercent: number, termMonths: number, paymentsMade: number) {
+  if (principal <= 0 || paymentsMade >= termMonths) return 0;
+  if (paymentsMade <= 0) return principal;
+  const payment = loanPayment(principal, aprPercent, termMonths);
+  const monthlyRate = aprPercent / 100 / 12;
+  if (monthlyRate === 0) return Math.max(principal - payment * paymentsMade, 0);
+  const growth = Math.pow(1 + monthlyRate, paymentsMade);
+  return Math.max(principal * growth - payment * ((growth - 1) / monthlyRate), 0);
+}
+
 function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", equity: number): OptionCost {
   const purchasePrice = kind === "used" ? input.usedPurchasePrice : input.newPurchasePrice;
-  const depreciationRate =
-    kind === "used"
-      ? calculatorAssumptions.usedReplacementDepreciationReserveAnnualRate
-      : calculatorAssumptions.newReplacementDepreciationReserveAnnualRate;
+  const endingVehicleValue = kind === "used" ? input.usedEndingValue : input.newEndingValue;
 
   // Negative equity is treated as extra financed cost; positive equity offsets the amount financed.
   const equityOffset = Math.max(equity, 0);
@@ -127,12 +146,23 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
   const monthlyLoanPayment = loanPayment(financedAmount, input.apr, input.loanTermMonths);
   const loanPaymentMonths = Math.min(input.comparisonMonths, Math.max(input.loanTermMonths, 0));
   const paidDuringPeriod = monthlyLoanPayment * loanPaymentMonths;
+  const remainingLoanBalanceAtEnd = remainingLoanBalance(
+    financedAmount,
+    input.apr,
+    input.loanTermMonths,
+    loanPaymentMonths
+  );
   const ownershipDeltas =
     (input.insuranceMonthlyDelta + input.fuelMonthlyDelta + input.maintenanceMonthlyDelta) * input.comparisonMonths;
 
-  // Depreciation reserve is intentionally simple and centrally configurable, not a market-value prediction.
-  const depreciationReserve = purchasePrice * depreciationRate * (input.comparisonMonths / 12);
-  const totalCost = input.downPayment + paidDuringPeriod + input.taxesAndFees + ownershipDeltas + depreciationReserve;
+  const depreciationEstimate = endingVehicleValue === undefined
+    ? undefined
+    : Math.max(purchasePrice - endingVehicleValue, 0);
+  const endingEquity = endingVehicleValue === undefined
+    ? undefined
+    : endingVehicleValue - remainingLoanBalanceAtEnd;
+  // Headline totals compare cash flow only. Ending value, loan balance, equity, and depreciation stay separate.
+  const totalCost = Math.max(input.downPayment + paidDuringPeriod + input.taxesAndFees + ownershipDeltas, 0);
 
   return {
     key: kind,
@@ -143,12 +173,24 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
     financedAmount,
     monthlyLoanPayment,
     loanPaymentMonths,
-    depreciationReserve,
+    endingVehicleValue,
+    remainingLoanBalanceAtEnd,
+    endingEquity,
+    depreciationEstimate,
+    assumptionsNotIncluded: [
+      ...(endingVehicleValue === undefined ? ["Vehicle depreciation and ending equity"] : []),
+      "Unentered repairs, insurance, fuel, taxes, fees, and financing changes"
+    ],
     drivers: [
       `${money(financedAmount)} estimated financed amount`,
       `${money(monthlyLoanPayment)} estimated monthly loan payment counted for ${loanPaymentMonths} month${loanPaymentMonths === 1 ? "" : "s"}`,
       ...(loanPaymentMonths < input.comparisonMonths ? [`Loan payments stop after the entered ${input.loanTermMonths}-month term`] : []),
-      `${money(depreciationReserve)} simple depreciation reserve`
+      equity >= 0
+        ? `${money(equity)} current-car equity applied toward replacement financing`
+        : `${money(Math.abs(equity))} current-car negative equity added to replacement financing`,
+      ...(depreciationEstimate === undefined
+        ? ["Depreciation excluded because no ending value was entered"]
+        : [`${money(depreciationEstimate)} estimated depreciation shown separately from cash flow`])
     ]
   };
 }
@@ -157,7 +199,7 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
   const input = sanitizeInput(rawInput);
   const safetyFlag = hasSafetyFlag(input);
   const comparisonMonths = input.comparisonMonths;
-  const equity = input.currentValue - input.remainingLoanBalance;
+  const equity = input.currentValue - input.currentLoanPayoff;
   const repairCostToValueRatio = input.currentValue > 0 ? input.repairQuote / input.currentValue : 1;
   const usableMonths = Math.max(input.usableMonthsAfterRepair, 1);
   const repairCostPerUsableMonth = input.repairQuote / usableMonths;
@@ -166,27 +208,30 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     (answer) => answer === "no" || answer === "not-sure" || answer === "not-yet"
   );
 
-  // Remaining loan exposure is spread over a conservative period instead of modeling the user's actual note.
-  const estimatedLoanCarry = Math.min(
-    input.remainingLoanBalance,
-    (input.remainingLoanBalance / calculatorAssumptions.remainingLoanBalanceMonthlyDivisor) * comparisonMonths
-  );
+  const currentLoanPaymentMonths = Math.min(comparisonMonths, input.currentPaymentsRemaining);
+  const currentLoanCashFlow = input.currentMonthlyPayment * currentLoanPaymentMonths;
   const repairTotal =
     input.repairQuote +
-    input.additionalRepairs +
-    estimatedLoanCarry +
-    calculatorAssumptions.currentOwnershipReserveMonthly * comparisonMonths;
+    input.expectedFutureMaintenance +
+    currentLoanCashFlow;
 
   const repairOption: OptionCost = {
     key: "repair",
     label: "Repair and Keep",
     totalCost: repairTotal,
     monthlyEquivalent: repairTotal / comparisonMonths,
-    upfrontCash: input.repairQuote + input.additionalRepairs,
+    upfrontCash: input.repairQuote,
+    remainingLoanBalanceAtEnd: input.currentPaymentsRemaining <= comparisonMonths ? 0 : undefined,
+    assumptionsNotIncluded: [
+      "Current vehicle value, depreciation, and ending equity",
+      ...(input.currentPaymentsRemaining > comparisonMonths ? ["Current vehicle loan balance at the end of the period"] : []),
+      ...(input.expectedFutureMaintenance === 0 ? ["Additional future maintenance and repairs"] : []),
+      "Unentered repairs, insurance, fuel, taxes, and other ownership changes"
+    ],
     drivers: [
       `${money(input.repairQuote)} repair quote`,
-      `${money(input.additionalRepairs)} expected additional repairs`,
-      `${money(calculatorAssumptions.currentOwnershipReserveMonthly * comparisonMonths)} ownership reserve`
+      `${money(input.expectedFutureMaintenance)} expected future maintenance and repairs`,
+      `${money(currentLoanCashFlow)} current loan payments counted for ${currentLoanPaymentMonths} month${currentLoanPaymentMonths === 1 ? "" : "s"}`
     ]
   };
 
@@ -200,12 +245,15 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     .filter((option) => option.key !== "repair")
     .reduce<OptionCost | null>((lowest, option) => (!lowest || option.totalCost < lowest.totalCost ? option : lowest), null);
   const replacementGap = bestReplacement ? Math.abs(bestReplacement.totalCost - repairOption.totalCost) : 0;
-  const closeThreshold = Math.max(repairOption.totalCost, bestReplacement?.totalCost ?? repairOption.totalCost) *
-    calculatorAssumptions.closeCallThresholdPercent;
+  const largerComparedTotal = Math.max(repairOption.totalCost, bestReplacement?.totalCost ?? repairOption.totalCost);
+  const closeThreshold = Math.max(
+    largerComparedTotal * calculatorAssumptions.closeCallThresholdPercent,
+    calculatorAssumptions.closeCallMinimumDollars
+  );
 
   const riskFactors = [
     input.mileage >= calculatorAssumptions.highMileageThreshold,
-    input.additionalRepairs > input.repairQuote * 0.35,
+    input.expectedFutureMaintenance > input.repairQuote * 0.35,
     input.firstMajorRepair !== "yes",
     input.reliabilityImportance === "high",
     input.essentialVehicleUse,
@@ -237,23 +285,21 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     outcome === "safety"
       ? "Safety or structural concerns need professional review before relying on this comparison"
       : outcome === "close"
-        ? "The financial comparison appears close"
-        : outcome === "repair"
-          ? "Repairing appears to have the lower estimated cost"
-          : "Replacing appears to have the lower estimated cost";
+        ? "The estimated costs are close enough that another repair quote, a different replacement price, or one changed assumption could change the result."
+        : `${lowestOption.label} appears less expensive under the assumptions you entered.`;
 
   const summary =
     outcome === "safety"
       ? "This tool cannot evaluate vehicle safety. Have a qualified professional inspect the vehicle before making a decision or continuing to drive it."
       : outcome === "close"
-        ? `The options are within about ${money(closeThreshold)} over ${period}, so another written repair estimate could change the result.`
-        : `${headline} over the next ${period} by approximately ${money(savings)} compared with ${
+        ? `The cash-flow estimates differ by ${money(replacementGap)}. The close-call limit for these totals is ${money(closeThreshold)}.`
+        : `Over ${period}, the estimated cash paid is approximately ${money(savings)} lower than ${
             outcome === "replace" ? "repairing your current vehicle" : "the lowest replacement estimate"
           }.`;
 
   const drivers = [
-    `${repairOption.label}: ${money(repairOption.totalCost)} estimated over ${period}`,
-    bestReplacement ? `${bestReplacement.label}: ${money(bestReplacement.totalCost)} estimated over ${period}` : "Replacement option limited by your preference",
+    `${repairOption.label}: ${money(repairOption.totalCost)} estimated cash paid over ${period}`,
+    bestReplacement ? `${bestReplacement.label}: ${money(bestReplacement.totalCost)} estimated cash paid over ${period}` : "Replacement option limited by your preference",
     repairCostToValueRatio > 0.5
       ? `Repair quote equals about ${Math.round(repairCostToValueRatio * 100)}% of current estimated value`
       : `Repair quote is about ${money(repairCostPerUsableMonth)} per expected usable month`
@@ -265,7 +311,7 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
       : []),
     input.wholeVehicleCondition === "not-sure"
       ? "A broader inspection could identify other near-term work that is not in the amount you entered."
-      : `If additional repairs rise above ${money(input.additionalRepairs + Math.max(750, closeThreshold))}, replacement may become more competitive.`,
+      : `If future maintenance and repairs rise above ${money(input.expectedFutureMaintenance + closeThreshold)}, replacement may become more competitive.`,
     "A lower replacement purchase price, larger down payment, or lower APR could reduce replacement cost.",
     "A second diagnosis, safety inspection, or shorter usable-life estimate could materially change the repair side."
   ].slice(0, 4);

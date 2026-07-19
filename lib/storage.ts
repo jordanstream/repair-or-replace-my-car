@@ -21,9 +21,11 @@ export function isStoredCalculatorInput(value: unknown): value is CalculatorInpu
     "vehicleYear",
     "mileage",
     "currentValue",
-    "remainingLoanBalance",
+    "currentLoanPayoff",
+    "currentMonthlyPayment",
+    "currentPaymentsRemaining",
     "repairQuote",
-    "additionalRepairs",
+    "expectedFutureMaintenance",
     "usableMonthsAfterRepair",
     "usedPurchasePrice",
     "newPurchasePrice",
@@ -42,6 +44,8 @@ export function isStoredCalculatorInput(value: unknown): value is CalculatorInpu
     typeof value.model === "string" &&
     typeof value.repairCategory === "string" &&
     (value.zipCode === undefined || typeof value.zipCode === "string") &&
+    (value.usedEndingValue === undefined || isFiniteNumber(value.usedEndingValue)) &&
+    (value.newEndingValue === undefined || isFiniteNumber(value.newEndingValue)) &&
     threeWayValues.includes(String(value.safeToDrive)) &&
     Object.values(value.safetyConcerns).every((entry) => threeWayValues.includes(String(entry))) &&
     threeWayValues.includes(String(value.firstMajorRepair)) &&

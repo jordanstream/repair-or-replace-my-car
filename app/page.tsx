@@ -6,8 +6,8 @@ import { guides } from "@/data/guides";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
-  title: "Should You Repair or Replace Your Car?",
-  description: "Got a major repair quote? Compare estimated repair and replacement costs over 12, 24, or 36 months.",
+  title: "Compare Your Car Repair Estimate With Replacement Costs",
+  description: "Already have a repair estimate? Compare repairing your car with realistic replacement costs over 12, 24, or 36 months.",
   path: "/"
 });
 
@@ -37,23 +37,24 @@ export default function HomePage() {
     <main>
       <section className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:items-center lg:px-8 lg:py-20">
         <div>
+          <p className="mb-3 text-base font-semibold text-brand-700">Already have a repair estimate?</p>
           <h1 className="max-w-3xl text-4xl font-bold leading-tight text-ink-950 md:text-6xl">
-            Should You Repair or Replace Your Car?
+            See whether repairing your car or replacing it may make more financial sense.
           </h1>
           <p className="mt-6 max-w-2xl text-xl leading-8 text-ink-700">
-            Got a major repair quote? Compare the estimated cost of repairing your current car with replacing it used
-            or new before you make a decision.
+            Enter the estimate you received, your vehicle details, and realistic replacement costs. We’ll compare the
+            options and explain which assumptions are driving the result.
           </p>
           <p className="mt-4 max-w-2xl leading-7 text-ink-700">
-            Car Second Opinion uses the numbers you enter to compare costs over time. It is an educational
-            estimate, not a prediction or professional recommendation.
+            This is a financial scenario comparison based on your entries. It does not diagnose the vehicle, price the
+            repair, or guarantee what will happen next.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button href="/calculator">Compare My Options</Button>
             <Button href="/how-it-works" variant="secondary">How the comparison works</Button>
           </div>
           <p className="mt-6 max-w-2xl text-sm leading-6 text-ink-600">
-            Free decision-support tool. No account required. Estimates are not mechanical, safety, legal, or financial advice.
+            Uses your repair estimate. No account required. Not a mechanical diagnosis.
           </p>
         </div>
         <div className="rounded-lg border border-line bg-white p-5 shadow-soft">

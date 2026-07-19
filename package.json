@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:calculator": "tsx tests/calculator-scenarios.ts"
+    "test:calculator": "tsx tests/calculator-scenarios.ts",
+    "test:navigation": "tsx tests/calculator-navigation-contract.ts"
   },
   "dependencies": {
     "next": "^16.2.10",

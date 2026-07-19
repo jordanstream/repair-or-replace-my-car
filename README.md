@@ -62,7 +62,7 @@ Use Kit for checklist email capture and delivery:
 
 1. Create or log in to a free Kit account.
 2. Create an embedded form named `Major Car Repair Decision Checklist`.
-3. Add the checklist download link to the form incentive or first email: `https://carsecondopinion.com/downloads/major-car-repair-decision-checklist.txt`.
+3. Add the checklist download link to the form incentive or first email: `https://carsecondopinion.com/downloads/major-car-repair-decision-checklist.pdf`.
 4. In Kit developer settings, create a V4 API key.
 5. Find the form ID in Kit, or call Kit's `GET /v4/forms` endpoint with the V4 API key.
 6. Add `KIT_API_KEY` and `KIT_FORM_ID` to Vercel project environment variables for Production.
@@ -75,10 +75,19 @@ Google Search Console is used for indexing and search-performance reporting. Sub
 Google Analytics 4 should be used for interaction events. `components/GoogleAnalytics.tsx` loads the Google tag using `G-89CL7WMDH1` by default, or `NEXT_PUBLIC_GA_MEASUREMENT_ID` if a different measurement ID is set. `lib/analytics.ts` sends the prepared events:
 
 - `calculator_started`
+- `calculator_step_completed`
+- `calculator_step_back`
+- `calculator_validation_error`
 - `calculator_completed`
 - `result_repair`
 - `result_replace`
 - `result_close_call`
+- `result_details_opened`
+- `assumptions_edited`
+- `methodology_opened`
+- `quote_confidence_completed`
+- `shop_questions_opened`
+- `next_step_clicked`
 - `safety_warning_result`
 - `guide_cta_clicked`
 - `checklist_email_clicked`

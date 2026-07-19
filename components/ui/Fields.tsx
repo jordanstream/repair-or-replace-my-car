@@ -1,6 +1,7 @@
 "use client";
 
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import { Children, cloneElement, isValidElement, useId } from "react";
+import type { InputHTMLAttributes, ReactElement, ReactNode, SelectHTMLAttributes } from "react";
 
 type FieldProps = {
   label: string;
@@ -10,13 +11,25 @@ type FieldProps = {
 };
 
 export function Field({ label, helper, error, children }: FieldProps) {
+  const generatedId = useId();
+  const child = Children.only(children);
+  const fieldElement = isValidElement(child)
+    ? child as ReactElement<{ id?: string; "aria-describedby"?: string; "aria-invalid"?: boolean }>
+    : null;
+  const inputId = fieldElement?.props.id ?? `field-${generatedId}`;
+  const helperId = helper ? `${inputId}-help` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
+  const describedBy = [fieldElement?.props["aria-describedby"], helperId, errorId].filter(Boolean).join(" ") || undefined;
+
   return (
-    <label className="block">
-      <span className="text-sm font-semibold text-ink-800">{label}</span>
-      <span className="mt-1 block">{children}</span>
-      {helper ? <span className="mt-1 block text-sm text-ink-600">{helper}</span> : null}
-      {error ? <span className="mt-1 block text-sm font-semibold text-danger-700">{error}</span> : null}
-    </label>
+    <div className="block">
+      <label htmlFor={inputId} className="text-sm font-semibold text-ink-800">{label}</label>
+      <span className="mt-1 block">
+        {fieldElement ? cloneElement(fieldElement, { id: inputId, "aria-describedby": describedBy, "aria-invalid": error ? true : fieldElement.props["aria-invalid"] }) : child}
+      </span>
+      {helper ? <span id={helperId} className="mt-1 block text-sm text-ink-600">{helper}</span> : null}
+      {error ? <span id={errorId} className="mt-1 block text-sm font-semibold text-danger-700">{error}</span> : null}
+    </div>
   );
 }
 

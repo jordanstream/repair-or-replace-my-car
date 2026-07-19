@@ -10,6 +10,7 @@ export function ComparisonTable({ options, lowestKey }: { options: OptionCost[];
         <thead className="bg-wash">
           <tr>
             <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Option</th>
+            <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Upfront cash</th>
             <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Estimated total</th>
             <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Monthly equivalent</th>
             <th scope="col" className="px-4 py-3 font-semibold text-ink-800">Note</th>
@@ -19,6 +20,7 @@ export function ComparisonTable({ options, lowestKey }: { options: OptionCost[];
           {options.map((option) => (
             <tr key={option.key} className={option.key === lowestKey ? "bg-success-50" : undefined}>
               <th scope="row" className="px-4 py-4 font-semibold text-ink-950">{option.label}</th>
+              <td className="tabular px-4 py-4 text-ink-800">{formatter.format(option.upfrontCash)}</td>
               <td className="tabular px-4 py-4 text-ink-800">{formatter.format(option.totalCost)}</td>
               <td className="tabular px-4 py-4 text-ink-800">{formatter.format(option.monthlyEquivalent)}</td>
               <td className="px-4 py-4 text-ink-700">{option.key === lowestKey ? "Lowest estimated cost" : "Compare assumptions carefully"}</td>

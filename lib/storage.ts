@@ -4,6 +4,7 @@ const threeWayValues = ["yes", "no", "not-sure"];
 const reliabilityValues = ["low", "medium", "high"];
 const preferenceValues = ["used", "new", "both"];
 const periodValues = [12, 24, 36];
+const quoteConfirmationValues = [...threeWayValues, "not-yet"];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -44,6 +45,10 @@ export function isStoredCalculatorInput(value: unknown): value is CalculatorInpu
     threeWayValues.includes(String(value.safeToDrive)) &&
     Object.values(value.safetyConcerns).every((entry) => threeWayValues.includes(String(entry))) &&
     threeWayValues.includes(String(value.firstMajorRepair)) &&
+    (value.itemizedEstimate === undefined || threeWayValues.includes(String(value.itemizedEstimate))) &&
+    (value.testingExplained === undefined || threeWayValues.includes(String(value.testingExplained))) &&
+    (value.secondShopConfirmed === undefined || quoteConfirmationValues.includes(String(value.secondShopConfirmed))) &&
+    (value.wholeVehicleCondition === undefined || threeWayValues.includes(String(value.wholeVehicleCondition))) &&
     reliabilityValues.includes(String(value.reliabilityImportance)) &&
     typeof value.essentialVehicleUse === "boolean" &&
     preferenceValues.includes(String(value.replacementPreference)) &&

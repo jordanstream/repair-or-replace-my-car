@@ -13,6 +13,10 @@ const base: CalculatorInput = {
   safetyConcerns: Object.fromEntries(Object.keys(safetyConcernLabels).map((key) => [key, "no"])) as Record<string, "no">,
   repairCategory: "Transmission",
   repairQuote: 2500,
+  itemizedEstimate: "yes",
+  testingExplained: "yes",
+  secondShopConfirmed: "yes",
+  wholeVehicleCondition: "no",
   firstMajorRepair: "yes",
   additionalRepairs: 500,
   usableMonthsAfterRepair: calculatorAssumptions.defaultUsableMonthsAfterRepair,
@@ -130,7 +134,7 @@ const negativeEquity = calculateRepairOrReplace({
   taxesAndFees: 1200
 });
 const negativeEquityUsed = negativeEquity.options.find((option) => option.key === "used");
-if (!negativeEquityUsed || negativeEquityUsed.financedAmount !== 24200) {
+if (!negativeEquityUsed || negativeEquityUsed.financedAmount !== 23000) {
   throw new Error("Remaining loan balance greater than car value should roll negative equity into replacement path");
 }
 console.log("negative equity handling: passed");
@@ -194,3 +198,38 @@ if (!parseStoredCalculatorInput(JSON.stringify(base))) {
   throw new Error("Valid localStorage payload should produce calculator input");
 }
 console.log("localStorage result parsing: passed");
+
+const limitedQuoteConfidence = calculateRepairOrReplace({
+  ...base,
+  itemizedEstimate: "no",
+  testingExplained: "not-sure",
+  secondShopConfirmed: "not-yet"
+});
+if (!limitedQuoteConfidence.quoteConfidenceLimited || limitedQuoteConfidence.outcome !== calculateRepairOrReplace(base).outcome) {
+  throw new Error("Quote-confidence answers should tailor uncertainty without changing the financial outcome");
+}
+if (!limitedQuoteConfidence.changeFactors.some((factor) => factor.includes("itemized estimate"))) {
+  throw new Error("Limited quote confidence should add relevant result guidance");
+}
+console.log("quote-confidence guidance: passed");
+
+const upfrontCash = calculateRepairOrReplace(base);
+const upfrontUsed = upfrontCash.options.find((option) => option.key === "used");
+if (upfrontCash.options[0].upfrontCash !== base.repairQuote + base.additionalRepairs) {
+  throw new Error("Repair upfront cash should include the entered repair and known near-term repair amounts");
+}
+if (!upfrontUsed || upfrontUsed.upfrontCash !== base.downPayment + base.taxesAndFees) {
+  throw new Error("Replacement upfront cash should include the entered down payment, taxes, and fees");
+}
+if (upfrontUsed.monthlyEquivalent !== upfrontUsed.totalCost / base.comparisonMonths) {
+  throw new Error("Monthly equivalent should equal total estimated cost divided by the comparison period");
+}
+console.log("upfront and monthly cost calculations: passed");
+
+const longPeriodLoanExposure = calculateRepairOrReplace({ ...base, remainingLoanBalance: 12000, comparisonMonths: 36 });
+const longPeriodRepair = longPeriodLoanExposure.options.find((option) => option.key === "repair");
+const expectedRepairTotal = base.repairQuote + base.additionalRepairs + 12000 + calculatorAssumptions.currentOwnershipReserveMonthly * 36;
+if (!longPeriodRepair || longPeriodRepair.totalCost !== expectedRepairTotal) {
+  throw new Error("Current-car loan exposure should not exceed the entered remaining balance");
+}
+console.log("remaining-loan exposure cap: passed");

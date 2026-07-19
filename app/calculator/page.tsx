@@ -1,8 +1,9 @@
 import { CalculatorForm } from "@/components/CalculatorForm";
 import { EstimateDisclaimer } from "@/components/EstimateDisclaimer";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { TrustPreview } from "@/components/TrustPreview";
+import { TrackedLink } from "@/components/TrackedLink";
+import { analyticsEvents } from "@/lib/analytics";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -27,12 +28,12 @@ export default function CalculatorPage() {
       <div className="mb-8 max-w-3xl">
         <h1 className="text-4xl font-bold text-ink-950">Repair or Replace My Car Calculator</h1>
         <p className="mt-4 text-lg leading-8 text-ink-700">
-          This calculator uses your repair quote, vehicle situation, and replacement assumptions to compare estimated
-          costs. It does not look up exact vehicle values or local repair prices.
+          Start with the repair estimate you already received. The calculator compares that amount with your vehicle
+          situation and realistic replacement assumptions. It does not diagnose the vehicle or estimate a fair repair price.
         </p>
         <EstimateDisclaimer className="mt-6" />
         <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold text-brand-700">
-          <a href="/methodology" className="rounded-md px-1 py-1 underline underline-offset-4">Methodology</a>
+          <TrackedLink href="/methodology" event={analyticsEvents.methodologyOpened} properties={{ placement: "calculator_intro" }} className="rounded-md px-1 py-1 underline underline-offset-4">Methodology</TrackedLink>
           <a href="/disclaimer" className="rounded-md px-1 py-1 underline underline-offset-4">Full disclaimer</a>
         </div>
       </div>
@@ -43,13 +44,16 @@ export default function CalculatorPage() {
           <p>Your inputs stay in your browser. The estimate depends on what you enter, and safety concerns should be reviewed by qualified professionals.</p>
         </div>
         <div className="mt-4">
-          <Button href="/methodology" variant="secondary">Read the Methodology</Button>
+          <TrackedLink href="/methodology" event={analyticsEvents.methodologyOpened} properties={{ placement: "calculator_trust" }} className="inline-flex min-h-11 items-center justify-center rounded-md border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-brand-50">Read the methodology</TrackedLink>
         </div>
       </Card>
       <div className="mb-8">
         <TrustPreview />
       </div>
-      <CalculatorForm />
+      <Suspense fallback={<Card className="p-7"><p className="font-semibold text-ink-800">Loading calculator…</p></Card>}>
+        <CalculatorForm />
+      </Suspense>
     </main>
   );
 }
+import { Suspense } from "react";

@@ -1,6 +1,7 @@
 import { calculatorAssumptions } from "@/lib/calculator-constants";
 
 export type ThreeWay = "yes" | "no" | "not-sure";
+export type QuoteConfirmation = ThreeWay | "not-yet";
 export type ReliabilityImportance = "low" | "medium" | "high";
 export type ReplacementPreference = "used" | "new" | "both";
 export type RecommendationOutcome = "repair" | "replace" | "close" | "safety";
@@ -17,6 +18,10 @@ export type CalculatorInput = {
   safetyConcerns: Record<string, ThreeWay>;
   repairCategory: string;
   repairQuote: number;
+  itemizedEstimate?: ThreeWay;
+  testingExplained?: ThreeWay;
+  secondShopConfirmed?: QuoteConfirmation;
+  wholeVehicleCondition?: ThreeWay;
   firstMajorRepair: ThreeWay;
   additionalRepairs: number;
   usableMonthsAfterRepair: number;
@@ -41,6 +46,7 @@ export type OptionCost = {
   label: string;
   totalCost: number;
   monthlyEquivalent: number;
+  upfrontCash: number;
   financedAmount?: number;
   monthlyLoanPayment?: number;
   loanPaymentMonths?: number;
@@ -61,6 +67,7 @@ export type CalculatorResult = {
   summary: string;
   drivers: string[];
   changeFactors: string[];
+  quoteConfidenceLimited: boolean;
 };
 
 function money(value: number) {
@@ -115,7 +122,8 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
   // Negative equity is treated as extra financed cost; positive equity offsets the amount financed.
   const equityOffset = Math.max(equity, 0);
   const negativeEquity = Math.abs(Math.min(equity, 0));
-  const financedAmount = Math.max(purchasePrice + negativeEquity + input.taxesAndFees - input.downPayment - equityOffset, 0);
+  // Taxes and fees are counted as upfront cash below, so they are not also financed and double-counted.
+  const financedAmount = Math.max(purchasePrice + negativeEquity - input.downPayment - equityOffset, 0);
   const monthlyLoanPayment = loanPayment(financedAmount, input.apr, input.loanTermMonths);
   const loanPaymentMonths = Math.min(input.comparisonMonths, Math.max(input.loanTermMonths, 0));
   const paidDuringPeriod = monthlyLoanPayment * loanPaymentMonths;
@@ -131,6 +139,7 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
     label: kind === "used" ? "Replace with Used" : "Replace with New",
     totalCost,
     monthlyEquivalent: totalCost / input.comparisonMonths,
+    upfrontCash: input.downPayment + input.taxesAndFees,
     financedAmount,
     monthlyLoanPayment,
     loanPaymentMonths,
@@ -152,10 +161,16 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
   const repairCostToValueRatio = input.currentValue > 0 ? input.repairQuote / input.currentValue : 1;
   const usableMonths = Math.max(input.usableMonthsAfterRepair, 1);
   const repairCostPerUsableMonth = input.repairQuote / usableMonths;
+  const quoteConfidenceAnswers = [input.itemizedEstimate, input.testingExplained, input.secondShopConfirmed];
+  const quoteConfidenceLimited = quoteConfidenceAnswers.some(
+    (answer) => answer === "no" || answer === "not-sure" || answer === "not-yet"
+  );
 
   // Remaining loan exposure is spread over a conservative period instead of modeling the user's actual note.
-  const estimatedLoanCarry =
-    (input.remainingLoanBalance / calculatorAssumptions.remainingLoanBalanceMonthlyDivisor) * comparisonMonths;
+  const estimatedLoanCarry = Math.min(
+    input.remainingLoanBalance,
+    (input.remainingLoanBalance / calculatorAssumptions.remainingLoanBalanceMonthlyDivisor) * comparisonMonths
+  );
   const repairTotal =
     input.repairQuote +
     input.additionalRepairs +
@@ -167,6 +182,7 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     label: "Repair and Keep",
     totalCost: repairTotal,
     monthlyEquivalent: repairTotal / comparisonMonths,
+    upfrontCash: input.repairQuote + input.additionalRepairs,
     drivers: [
       `${money(input.repairQuote)} repair quote`,
       `${money(input.additionalRepairs)} expected additional repairs`,
@@ -204,7 +220,13 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
 
   // Confidence is reduced by uncertainty and safety issues, and increased by a large cost separation.
   const largeCostSeparation = bestReplacement ? replacementGap > closeThreshold * 2.2 : false;
-  const confidence: ConfidenceLevel = safetyFlag || riskFactors >= 5 ? "Low" : largeCostSeparation && riskFactors <= 2 ? "High" : "Medium";
+  const confidence: ConfidenceLevel = safetyFlag || riskFactors >= 5
+    ? "Low"
+    : quoteConfidenceLimited
+      ? "Medium"
+      : largeCostSeparation && riskFactors <= 2
+        ? "High"
+        : "Medium";
 
   const period = `${comparisonMonths} months`;
   const winningFinancialOption = outcome === "replace" ? (bestReplacement ?? lowestOption) : repairOption;
@@ -215,10 +237,10 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     outcome === "safety"
       ? "Safety or structural concerns need professional review before relying on this comparison"
       : outcome === "close"
-        ? "The financial comparison is close, get a second repair opinion"
+        ? "The financial comparison appears close"
         : outcome === "repair"
-          ? "Repairing is likely the lower-cost option"
-          : "Replacing is likely the lower-cost option";
+          ? "Repairing appears to have the lower estimated cost"
+          : "Replacing appears to have the lower estimated cost";
 
   const summary =
     outcome === "safety"
@@ -238,10 +260,15 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
   ];
 
   const changeFactors = [
-    `If additional repairs rise above ${money(input.additionalRepairs + Math.max(750, closeThreshold))}, replacement may become more competitive.`,
+    ...(quoteConfidenceLimited
+      ? ["A second inspection or itemized estimate could change the repair diagnosis or amount used in this comparison."]
+      : []),
+    input.wholeVehicleCondition === "not-sure"
+      ? "A broader inspection could identify other near-term work that is not in the amount you entered."
+      : `If additional repairs rise above ${money(input.additionalRepairs + Math.max(750, closeThreshold))}, replacement may become more competitive.`,
     "A lower replacement purchase price, larger down payment, or lower APR could reduce replacement cost.",
     "A second diagnosis, safety inspection, or shorter usable-life estimate could materially change the repair side."
-  ];
+  ].slice(0, 4);
 
   return {
     safetyFlag,
@@ -255,6 +282,7 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     headline,
     summary,
     drivers,
-    changeFactors
+    changeFactors,
+    quoteConfidenceLimited
   };
 }

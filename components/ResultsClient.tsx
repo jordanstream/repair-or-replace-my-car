@@ -38,7 +38,7 @@ function buildEmailResultsHref(input: CalculatorInput, result: ReturnType<typeof
     "",
     `Confidence: ${result.confidence}`,
     `Comparison period: ${input.comparisonMonths} months`,
-    `Lowest estimate: ${result.lowestOption.label}`,
+    `Lowest estimated cash flow: ${result.lowestOption.label}`,
     "",
     "Estimated cash paid during the comparison period:",
     ...result.options.map((option) => `${option.label}: ${formatter.format(option.totalCost)} (${formatter.format(option.monthlyEquivalent)} monthly cash-flow equivalent)`),
@@ -354,7 +354,7 @@ export function ResultsClient() {
         {input.wholeVehicleCondition !== "no" ? (
           <Card className="p-6">
             <h2 className="text-xl font-bold text-ink-950">The quoted repair may not be the only near-term cost.</h2>
-            <p className="mt-3 leading-7 text-ink-700">Ask whether a broader inspection identified other major repairs. Only the additional amount you entered is included in the repair path.</p>
+            <p className="mt-3 leading-7 text-ink-700">Ask whether a broader inspection identified other major repairs. Only the future maintenance and repair amount you entered is included in the repair path.</p>
           </Card>
         ) : null}
       </section>

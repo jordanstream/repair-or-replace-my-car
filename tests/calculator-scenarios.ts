@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { calculateRepairOrReplace, type CalculatorInput } from "../lib/calculator";
-import { calculatorAssumptions, safetyConcernLabels } from "../lib/calculator-constants";
+import { safetyConcernLabels } from "../lib/calculator-constants";
 import { parseStoredCalculatorInput } from "../lib/storage";
 
 const base: CalculatorInput = {
@@ -8,19 +10,27 @@ const base: CalculatorInput = {
   model: "Accord",
   mileage: 120000,
   currentValue: 7500,
-  remainingLoanBalance: 0,
+  currentLoanPayoff: 0,
+  currentMonthlyPayment: 0,
+  currentPaymentsRemaining: 0,
   safeToDrive: "yes",
   safetyConcerns: Object.fromEntries(Object.keys(safetyConcernLabels).map((key) => [key, "no"])) as Record<string, "no">,
   repairCategory: "Transmission",
   repairQuote: 2500,
+  itemizedEstimate: "yes",
+  testingExplained: "yes",
+  secondShopConfirmed: "yes",
+  wholeVehicleCondition: "no",
   firstMajorRepair: "yes",
-  additionalRepairs: 500,
-  usableMonthsAfterRepair: calculatorAssumptions.defaultUsableMonthsAfterRepair,
+  expectedFutureMaintenance: 0,
+  usableMonthsAfterRepair: 24,
   reliabilityImportance: "medium",
   essentialVehicleUse: false,
-  replacementPreference: "both",
+  replacementPreference: "used",
   usedPurchasePrice: 19000,
   newPurchasePrice: 34000,
+  usedEndingValue: undefined,
+  newEndingValue: undefined,
   downPayment: 2500,
   apr: 8,
   loanTermMonths: 60,
@@ -32,165 +42,153 @@ const base: CalculatorInput = {
   zipCode: "96815"
 };
 
-const scenarios = [
-  {
-    name: "repair clearly cheaper",
-    input: base,
-    expected: "repair"
-  },
-  {
-    name: "replacement clearly cheaper",
-    input: {
-      ...base,
-      mileage: 190000,
-      currentValue: 3000,
-      repairQuote: 12500,
-      additionalRepairs: 4000,
-      usableMonthsAfterRepair: 12,
-      reliabilityImportance: "high",
-      usedPurchasePrice: 10500,
-      downPayment: 3500,
-      taxesAndFees: 800,
-      insuranceMonthlyDelta: 15,
-      maintenanceMonthlyDelta: -120
-    },
-    expected: "replace"
-  },
-  {
-    name: "close financial comparison",
-    input: {
-      ...base,
-      repairQuote: 7000,
-      additionalRepairs: 1000,
-      usedPurchasePrice: 17000,
-      downPayment: 2500,
-      taxesAndFees: 900,
-      insuranceMonthlyDelta: 10,
-      maintenanceMonthlyDelta: -80,
-      apr: 6
-    },
-    expected: "close"
-  },
-  {
-    name: "safety warning scenario",
-    input: {
-      ...base,
-      safeToDrive: "not-sure",
-      safetyConcerns: { ...base.safetyConcerns, severeRust: "not-sure" }
-    },
-    expected: "safety"
-  }
-] as const;
-
-for (const scenario of scenarios) {
-  const result = calculateRepairOrReplace(scenario.input);
-  if (result.outcome !== scenario.expected) {
-    throw new Error(`${scenario.name}: expected ${scenario.expected}, received ${result.outcome}`);
-  }
-  console.log(`${scenario.name}: ${result.outcome}, ${result.confidence}`);
+function option(input: CalculatorInput, key: "repair" | "used" | "new") {
+  const found = calculateRepairOrReplace(input).options.find((entry) => entry.key === key);
+  if (!found) throw new Error(`Expected ${key} option`);
+  return found;
 }
 
-const zeroApr = calculateRepairOrReplace({
-  ...base,
-  apr: 0,
-  loanTermMonths: 48,
-  usedPurchasePrice: 17000,
-  downPayment: 1000,
-  taxesAndFees: 0,
-  currentValue: 0
-});
-const zeroAprUsed = zeroApr.options.find((option) => option.key === "used");
-if (!zeroAprUsed || zeroAprUsed.monthlyLoanPayment !== zeroAprUsed.financedAmount! / 48) {
-  throw new Error("0% APR should divide financed amount evenly across the loan term");
-}
-console.log("0% APR loan calculation: passed");
+const noCurrentLoan = option(base, "repair");
+if (noCurrentLoan.totalCost !== base.repairQuote) throw new Error("No current loan should add no loan cash flow");
+console.log("no current loan: passed");
 
-const veryHighRepairQuote = calculateRepairOrReplace({
-  ...base,
-  currentValue: 4500,
-  repairQuote: 30000,
-  additionalRepairs: 5000,
-  usableMonthsAfterRepair: 12,
-  usedPurchasePrice: 14000,
-  downPayment: 3000,
-  taxesAndFees: 1200
-});
-if (veryHighRepairQuote.outcome !== "replace") {
-  throw new Error("Very high repair quote should favor replacement when replacement assumptions are materially cheaper");
+const positiveEquity = option({ ...base, currentValue: 12000, currentLoanPayoff: 4000 }, "used");
+const noEquity = option({ ...base, currentValue: 4000, currentLoanPayoff: 4000 }, "used");
+if ((noEquity.financedAmount ?? 0) - (positiveEquity.financedAmount ?? 0) !== 8000) {
+  throw new Error("Positive current-car equity should reduce replacement financing");
 }
-console.log("very high repair quote handling: passed");
+console.log("positive current-car equity: passed");
 
-const negativeEquity = calculateRepairOrReplace({
+const negativeEquityInput = {
   ...base,
   currentValue: 5000,
-  remainingLoanBalance: 12000,
-  repairQuote: 3500,
+  currentLoanPayoff: 12000,
   usedPurchasePrice: 18000,
-  downPayment: 2000,
-  taxesAndFees: 1200
-});
-const negativeEquityUsed = negativeEquity.options.find((option) => option.key === "used");
-if (!negativeEquityUsed || negativeEquityUsed.financedAmount !== 24200) {
-  throw new Error("Remaining loan balance greater than car value should roll negative equity into replacement path");
-}
-console.log("negative equity handling: passed");
-
-const shortLoan = calculateRepairOrReplace({
-  ...base,
-  loanTermMonths: 12,
-  comparisonMonths: 36,
-  usedPurchasePrice: 12000,
   downPayment: 2000,
   taxesAndFees: 0,
   insuranceMonthlyDelta: 0,
   fuelMonthlyDelta: 0,
-  maintenanceMonthlyDelta: 0
-});
-const shortLoanUsed = shortLoan.options.find((option) => option.key === "used");
-if (!shortLoanUsed || shortLoanUsed.loanPaymentMonths !== 12 || !shortLoanUsed.drivers.some((driver) => driver.includes("payments stop"))) {
-  throw new Error("Loan payments should stop after a shorter entered loan term");
-}
-console.log("short loan term handling: passed");
+  maintenanceMonthlyDelta: 0,
+  apr: 0,
+  loanTermMonths: 12,
+  comparisonMonths: 12 as const
+};
+const negativeEquity = option(negativeEquityInput, "used");
+if (negativeEquity.financedAmount !== 23000) throw new Error("Negative equity should be added to replacement financing");
+if (negativeEquity.totalCost !== 25000) throw new Error("Loan payoff must be represented once through negative equity, not duplicated or omitted");
+console.log("negative equity and single payoff treatment: passed");
 
-const usedOnly = calculateRepairOrReplace({ ...base, replacementPreference: "used" });
-if (usedOnly.options.some((option) => option.key === "new")) {
-  throw new Error("Used-only comparison should not include new replacement option");
-}
-const newOnly = calculateRepairOrReplace({ ...base, replacementPreference: "new" });
-if (newOnly.options.some((option) => option.key === "used")) {
-  throw new Error("New-only comparison should not include used replacement option");
-}
-console.log("used-only and new-only comparisons: passed");
-
-const sanitized = calculateRepairOrReplace({
+const loanEndsEarly = option({
   ...base,
-  currentValue: -5000,
-  repairQuote: -1000,
-  additionalRepairs: -200,
-  remainingLoanBalance: -300,
-  usedPurchasePrice: -15000,
-  newPurchasePrice: -30000,
-  downPayment: -500,
-  apr: -4,
-  loanTermMonths: -12,
-  taxesAndFees: -700,
-  usableMonthsAfterRepair: -3
-});
-if (sanitized.options.some((option) => option.totalCost < 0 || option.monthlyEquivalent < 0)) {
-  throw new Error("Sanitized negative inputs should not produce negative totals");
+  currentLoanPayoff: 3000,
+  currentMonthlyPayment: 500,
+  currentPaymentsRemaining: 6,
+  comparisonMonths: 24
+}, "repair");
+if (loanEndsEarly.totalCost !== base.repairQuote + 3000 || loanEndsEarly.remainingLoanBalanceAtEnd !== 0) {
+  throw new Error("Current loan payments should stop when the entered payment count ends");
 }
-console.log("negative numeric input sanitization: passed");
+console.log("current loan ending before comparison period: passed");
 
-if (parseStoredCalculatorInput(null) !== null) {
-  throw new Error("Missing localStorage should not produce calculator input");
+const loanExtends = option({
+  ...base,
+  currentLoanPayoff: 15000,
+  currentMonthlyPayment: 400,
+  currentPaymentsRemaining: 48,
+  comparisonMonths: 24
+}, "repair");
+if (loanExtends.totalCost !== base.repairQuote + 400 * 24 || loanExtends.remainingLoanBalanceAtEnd !== undefined) {
+  throw new Error("An extending current loan should count only comparison-period payments and avoid inventing an ending balance");
 }
-if (parseStoredCalculatorInput("{not valid json") !== null) {
-  throw new Error("Malformed localStorage JSON should not produce calculator input");
+console.log("current loan extending beyond comparison period: passed");
+
+const zeroMaintenance = option(base, "repair");
+if (!zeroMaintenance.assumptionsNotIncluded.includes("Additional future maintenance and repairs")) {
+  throw new Error("Zero future maintenance should be disclosed as not included");
 }
-if (parseStoredCalculatorInput(JSON.stringify({ repairQuote: 1000 })) !== null) {
-  throw new Error("Partial localStorage payload should not produce calculator input");
+const enteredMaintenance = option({ ...base, expectedFutureMaintenance: 1800 }, "repair");
+if (enteredMaintenance.totalCost !== base.repairQuote + 1800) throw new Error("Entered future maintenance should be included once");
+console.log("zero and entered future maintenance: passed");
+
+const endingValueEntered = option({ ...base, usedPurchasePrice: 20000, usedEndingValue: 14000 }, "used");
+if (endingValueEntered.depreciationEstimate !== 6000 || endingValueEntered.endingVehicleValue !== 14000) {
+  throw new Error("Entered ending value should produce separately reported depreciation");
 }
-if (!parseStoredCalculatorInput(JSON.stringify(base))) {
-  throw new Error("Valid localStorage payload should produce calculator input");
+const sameWithoutEndingValue = option({ ...base, usedPurchasePrice: 20000, usedEndingValue: undefined }, "used");
+if (sameWithoutEndingValue.depreciationEstimate !== undefined || sameWithoutEndingValue.totalCost !== endingValueEntered.totalCost) {
+  throw new Error("Omitted ending value should exclude depreciation without changing cash flow");
 }
-console.log("localStorage result parsing: passed");
+console.log("replacement ending value entered and omitted: passed");
+
+const appreciation = option({ ...base, usedPurchasePrice: 20000, usedEndingValue: 24000 }, "used");
+if (appreciation.depreciationEstimate !== 0) throw new Error("Depreciation must not be negative");
+console.log("no negative depreciation: passed");
+
+function closeCallInput(repairCash: number, replacementCash: number): CalculatorInput {
+  return {
+    ...base,
+    currentValue: 0,
+    repairQuote: repairCash,
+    expectedFutureMaintenance: 0,
+    usedPurchasePrice: replacementCash,
+    downPayment: 0,
+    taxesAndFees: 0,
+    apr: 0,
+    loanTermMonths: 12,
+    comparisonMonths: 12,
+    insuranceMonthlyDelta: 0,
+    fuelMonthlyDelta: 0,
+    maintenanceMonthlyDelta: 0
+  };
+}
+
+if (calculateRepairOrReplace(closeCallInput(9050, 10000)).outcome !== "close") {
+  throw new Error("Ten-percent close-call threshold should trigger when it is larger than the dollar minimum");
+}
+if (calculateRepairOrReplace(closeCallInput(5300, 6000)).outcome !== "close") {
+  throw new Error("Dollar-minimum close-call threshold should trigger when it is larger than ten percent");
+}
+if (calculateRepairOrReplace(closeCallInput(8900, 10000)).outcome === "close") {
+  throw new Error("A result outside both close-call thresholds should be clear");
+}
+console.log("close-call percentage, dollar minimum, and clear result: passed");
+
+const safety = calculateRepairOrReplace({ ...base, safeToDrive: "not-sure" });
+if (safety.outcome !== "safety") throw new Error("Safety uncertainty should override the financial label");
+
+const limitedQuoteConfidence = calculateRepairOrReplace({
+  ...base,
+  itemizedEstimate: "no",
+  testingExplained: "not-sure",
+  secondShopConfirmed: "not-yet"
+});
+if (!limitedQuoteConfidence.quoteConfidenceLimited || limitedQuoteConfidence.outcome !== calculateRepairOrReplace(base).outcome) {
+  throw new Error("Quote-confidence answers should tailor guidance without changing the cash-flow result");
+}
+
+if (!parseStoredCalculatorInput(JSON.stringify(base))) throw new Error("Valid saved input should parse");
+if (parseStoredCalculatorInput("{not valid json") !== null) throw new Error("Malformed saved input should be rejected");
+
+const filesToScan = [
+  "lib/calculator.ts",
+  "lib/calculator-constants.ts",
+  "components/CalculatorForm.tsx",
+  "components/ResultsClient.tsx",
+  "app/methodology/page.tsx",
+  "app/how-it-works/page.tsx",
+  "app/page.tsx",
+  "README.md"
+];
+const source = filesToScan.map((file) => readFileSync(resolve(process.cwd(), file), "utf8")).join("\n");
+const removedAssumptionPatterns = [
+  /currentOwnershipReserveMonthly/,
+  /remainingLoanBalanceMonthlyDivisor/,
+  /usedReplacementDepreciationReserveAnnualRate/,
+  /newReplacementDepreciationReserveAnnualRate/,
+  /ownership reserve/i,
+  /simple depreciation reserve/i
+];
+for (const pattern of removedAssumptionPatterns) {
+  if (pattern.test(source)) throw new Error(`Removed hard-coded assumption still referenced: ${pattern}`);
+}
+console.log("removed hard-coded assumptions: passed");

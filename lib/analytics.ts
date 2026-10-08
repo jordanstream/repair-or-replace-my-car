@@ -22,6 +22,8 @@ export const analyticsEvents = {
   nextStepClicked: "next_step_clicked",
   externalRepairSearchClicked: "external_repair_search_clicked",
   externalReplacementLinkClicked: "external_replacement_link_clicked",
+  affiliateOfferViewed: "affiliate_offer_viewed",
+  affiliateCtaClicked: "affiliate_cta_clicked",
   printResultsClicked: "print_results_clicked",
   vehicleValueUnknownSelected: "vehicle_value_unknown_selected",
   calculatorReviewed: "calculator_reviewed",

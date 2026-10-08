@@ -29,4 +29,19 @@ if (!/prefers-reduced-motion: reduce/.test(globalStyles)) {
   throw new Error("Global motion must respect prefers-reduced-motion");
 }
 
+
+// Minimums apply on step validation, never mid-keystroke; these inputs must remain clearable.
+for (const key of ["vehicleYear", "usableMonthsAfterRepair", "loanTermMonths"] as const) {
+  if (!source.includes(`numericUpdate("${key}", e.target.value)`)) {
+    throw new Error(`Numeric field unexpectedly clamps partial input: ${key}`);
+  }
+}
+for (const rule of [
+  "form.vehicleYear < 1950",
+  "form.usableMonthsAfterRepair < 1",
+  "form.loanTermMonths < 1"
+]) {
+  if (!source.includes(rule)) throw new Error(`Missing step minimum validation: ${rule}`);
+}
+
 console.log(`calculator navigation contracts: ${contracts.length} passed`);

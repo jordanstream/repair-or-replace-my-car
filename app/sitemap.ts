@@ -5,10 +5,10 @@ import { siteConfig } from "@/lib/site";
 const staticRoutes = [
   "",
   "/calculator",
-  "/results",
   "/how-it-works",
   "/guides",
   "/checklist",
+  "/about",
   "/methodology",
   "/disclaimer",
   "/affiliate-disclosure",
@@ -17,13 +17,18 @@ const staticRoutes = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-  const routes = [...staticRoutes, ...guides.map((guide) => `/guides/${guide.slug}`)];
-
-  return routes.map((route) => ({
+  const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${siteConfig.url}${route}`,
-    lastModified: now,
-    changeFrequency: route.includes("/guides/") ? "monthly" : "weekly",
-    priority: route === "" ? 1 : route === "/calculator" ? 0.9 : 0.7
+    changeFrequency: route === "" || route === "/calculator" ? "weekly" : "monthly",
+    priority: route === "" ? 1 : route === "/calculator" ? 0.9 : 0.6
   }));
+
+  const guideEntries: MetadataRoute.Sitemap = guides.map((guide) => ({
+    url: `${siteConfig.url}/guides/${guide.slug}`,
+    lastModified: guide.lastReviewedDate,
+    changeFrequency: "monthly",
+    priority: 0.7
+  }));
+
+  return [...staticEntries, ...guideEntries];
 }

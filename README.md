@@ -50,6 +50,8 @@ NEXT_PUBLIC_SITE_URL=https://carsecondopinion.com
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-89CL7WMDH1
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=
 NEXT_PUBLIC_ANALYTICS_PROVIDER=
+NEXT_PUBLIC_REPAIR_PARTNER_URL=
+NEXT_PUBLIC_REPLACEMENT_PARTNER_URL=
 KIT_API_KEY=
 KIT_FORM_ID=
 ```
@@ -96,7 +98,9 @@ Google Analytics 4 should be used for interaction events. `components/GoogleAnal
 - `external_repair_search_clicked`
 - `external_replacement_link_clicked`
 
-Analytics remains safe and non-breaking if a future provider is unavailable.
+Analytics remains safe and non-breaking if a future provider is unavailable. Custom events use the same Google tag as pageviews, including the built-in fallback measurement ID.
+
+Optional affiliate monetization is intentionally result-stage only. Set `NEXT_PUBLIC_REPAIR_PARTNER_URL` for repair/close-call outcomes and/or `NEXT_PUBLIC_REPLACEMENT_PARTNER_URL` for replace outcomes. When no matching URL is configured, no affiliate block renders. Safety outcomes never render an affiliate offer. Affiliate clicks are tracked as `affiliate_cta_clicked` and links use `rel="sponsored"`.
 
 ## Architecture
 

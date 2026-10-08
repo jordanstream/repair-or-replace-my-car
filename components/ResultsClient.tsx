@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ChecklistSignup } from "@/components/ChecklistSignup";
+import { PartnerOffer } from "@/components/PartnerOffer";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { CostChart } from "@/components/CostChart";
 import { EstimateDisclaimer, safetyWarningText } from "@/components/EstimateDisclaimer";
@@ -373,6 +374,8 @@ export function ResultsClient() {
       ) : null}
 
       <ChecklistSignup placement="results" />
+
+      <PartnerOffer outcome={result.outcome} />
 
       <Card className="p-6">
         <p className="text-sm font-semibold text-brand-700">Suggested next step</p>

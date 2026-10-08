@@ -9,11 +9,11 @@ This was a CLI upload. The deployment metadata reports commit `c3da3b60561526172
 The connected Vercel source retrieval endpoint shows the file manifest and SHA-1 identifiers but truncates file content over roughly 2 KB. The required complete source is therefore not recoverable through the connected ChatGPT read endpoint. Vercel preview and sandbox creation also returned 403. A locally authorized Vercel REST token, used only on the owner's machine, is needed to perform byte-for-byte recovery. Do not commit or share that token.
 
 A tested, standalone **Production Recovery Pack** was supplied in the conversation containing:
-- `scripts/reconcile-vercel-production.mjs`: downloads all deployable production files, verifies their SHA-1s, excludes secrets/logs/internal docs, checks required paths, refuses unsafe branch or dirty checkout, and applies the authorized tiny patch.
-- `scripts/reconcile-vercel-production.test.mjs`: Node test suite (4 tests passing).
+- `scripts/reconcile-vercel-production.mjs`: downloads deployable production files, verifies SHA-1s, excludes secrets/logs/internal docs, checks required paths, and refuses unsafe branch writes. `--write` restores unpatched production source and generates a SHA-1 provenance manifest; only after inspecting/tests does `--patch` apply the authorized tiny changes.
+- `scripts/reconcile-vercel-production.test.mjs`: Node test suite (5 tests passing).
 - `docs/VALIDATION_MODE.md`: secure recovery instructions and release QA checklist.
 
-Import this pack on the recovery branch. Run the script in inspect-only mode first, then `--write`; inspect the diff and run typecheck, lint, calculator/navigation tests and the build. Only promote after a working preview of the recovered source.
+Import the updated recovery pack on the recovery branch. Run inspect-only, then `--write` to restore unmodified production source. Inspect the SHA-1 manifest and diff, run typecheck, lint, calculator/navigation tests and the build. Only then run `--patch`, repeat all tests, and review a working preview. The offer-view event uses intersection visibility rather than counting every mounted offer.
 
 ## Small authorized product patch, and nothing else
 

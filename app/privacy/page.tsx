@@ -13,7 +13,7 @@ export default function PrivacyPage() {
   return (
     <ContentPage
       title="Privacy Policy"
-      lastUpdated="July 25, 2026"
+      lastUpdated="October 8, 2026"
       showBottomLinks
       intro="Car Second Opinion is designed as a lightweight educational tool. The calculator does not require an account and does not store your calculation on our servers."
     >
@@ -48,15 +48,18 @@ export default function PrivacyPage() {
           calculator inputs.
         </p>
         <p className="mt-3 leading-7">
-          Google Analytics 4 and Vercel Speed Insights are not enabled by default. The site code requires an explicit
-          analytics setting before it loads Google Analytics, and the Speed Insights package is not installed. If either
-          service is enabled later, this policy and any required consent controls will be reviewed before deployment.
+          We currently use Google Analytics 4 (GA4) on the live website to understand site visits and how people use
+          features such as the calculator. Analytics loads only when explicitly enabled in the site configuration.
+          We do not currently use Vercel Speed Insights.
         </p>
         <p className="mt-3 leading-7">
-          If optional analytics is enabled, it may process general usage information such as page URL, page title,
-          referrer, approximate location, device and browser information, session information, and limited interaction
-          events. The event design excludes calculator amounts, make and model, ZIP code, free text, email address, and
-          complete calculation payloads.
+          GA4 may process general usage information such as page URL, page title, referrer, approximate location,
+          browser and device information, session information, cookies or similar identifiers, and interaction events.
+          We send limited event details such as calculator step number or broad result category. Our analytics event
+          design excludes repair amounts, vehicle make and model, ZIP code, free text, email address, and complete
+          calculation payloads. Google processes the analytics information it receives under its own policies.
+          Learn more about{" "}
+          <a className="underline underline-offset-4" href="https://www.google.com/policies/privacy/partners/">how Google uses information from sites using its services</a>.
         </p>
       </section>
 
@@ -64,9 +67,10 @@ export default function PrivacyPage() {
         <h2 className="text-2xl font-bold text-ink-950">Cookies and local storage</h2>
         <p className="mt-3 leading-7">
           The calculator uses browser local storage for the limited purpose of showing your results after you complete
-          the calculator. Optional analytics services may use cookies or similar technologies if they are enabled in the
-          future. Your browser settings may let you block or delete cookies and local storage, though doing so may affect
-          site functionality.
+          the calculator. GA4 may use analytics cookies or similar identifiers to measure site activity. You can
+          manage or block cookies through your browser settings, or use the{" "}
+          <a className="underline underline-offset-4" href="https://support.google.com/analytics/answer/181881">Google Analytics opt-out browser add-on</a>
+          {" "}where supported. Blocking cookies or local storage may affect some site functionality.
         </p>
       </section>
 

@@ -153,8 +153,38 @@ if (calculateRepairOrReplace(closeCallInput(8900, 10000)).outcome === "close") {
 }
 console.log("close-call percentage, dollar minimum, and clear result: passed");
 
+// Exercise all four final outcome labels with deterministic cash-flow scenarios.
+const clearRepair = calculateRepairOrReplace({ ...base, repairQuote: 1200 });
+if (clearRepair.outcome !== "repair" || clearRepair.safetyFlag) {
+  throw new Error("Affordable repair should produce a repair outcome");
+}
+const clearReplace = calculateRepairOrReplace({
+  ...base,
+  currentValue: 0,
+  currentValueStatus: "unknown",
+  repairQuote: 21000,
+  expectedFutureMaintenance: 3000,
+  usedPurchasePrice: 9000,
+  downPayment: 0,
+  taxesAndFees: 0,
+  apr: 0,
+  loanTermMonths: 12,
+  comparisonMonths: 12,
+  insuranceMonthlyDelta: 0,
+  fuelMonthlyDelta: 0,
+  maintenanceMonthlyDelta: 0
+});
+if (clearReplace.outcome !== "replace" || clearReplace.safetyFlag) {
+  throw new Error("Expensive repair versus lower replacement cost should produce a replacement outcome");
+}
+if (calculateRepairOrReplace(closeCallInput(9050, 10000)).outcome !== "close") {
+  throw new Error("Close-call scenario did not produce a close outcome");
+}
+console.log("repair, replace, and close-call outcome scenarios: passed");
+
 const safety = calculateRepairOrReplace({ ...base, safeToDrive: "not-sure" });
-if (safety.outcome !== "safety") throw new Error("Safety uncertainty should override the financial label");
+if (safety.outcome !== "safety" || !safety.safetyFlag) throw new Error("Safety uncertainty should override the financial label");
+console.log("safety outcome scenario: passed");
 
 const unknownVehicleValue = calculateRepairOrReplace({
   ...base,

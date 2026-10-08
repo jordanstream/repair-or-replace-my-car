@@ -21,6 +21,7 @@ export const analyticsEvents = {
   nextStepClicked: "next_step_clicked",
   externalRepairSearchClicked: "external_repair_search_clicked",
   externalReplacementLinkClicked: "external_replacement_link_clicked",
+  affiliateCtaClicked: "affiliate_cta_clicked",
   printResultsClicked: "print_results_clicked"
 } as const;
 
@@ -39,7 +40,7 @@ declare global {
 export function trackEvent(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>) {
   const eventProperties = properties ?? {};
 
-  if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && window.gtag) {
+  if (typeof window !== "undefined" && window.gtag) {
     window.gtag("event", event, eventProperties);
   }
 

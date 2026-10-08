@@ -112,8 +112,9 @@ export function CalculatorForm() {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  function numericUpdate<K extends keyof CalculatorInput>(key: K, value: string, min = 0) {
-    update(key, (value === "" ? 0 : Math.max(min, numberValue(value))) as CalculatorInput[K]);
+  // Let users type partial numbers; minimum values are checked when advancing steps.
+  function numericUpdate<K extends keyof CalculatorInput>(key: K, value: string) {
+    update(key, (value === "" ? 0 : Math.max(0, numberValue(value))) as CalculatorInput[K]);
   }
 
   function optionalNumericUpdate(key: "usedEndingValue" | "newEndingValue", value: string) {
@@ -244,7 +245,7 @@ export function CalculatorForm() {
             <h2 id="current-vehicle-heading" {...headingProps}><span className="sr-only">Step 1 of 4: </span>Your current situation</h2>
             <p className="mt-2 max-w-2xl leading-7 text-ink-700">Start with what you know today. A ballpark is enough where an exact number is not available.</p>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <Field label="Vehicle year"><TextInput id="vehicle-year" type="number" min="1950" value={form.vehicleYear || ""} aria-invalid={invalidFieldId === "vehicle-year"} onChange={(e) => numericUpdate("vehicleYear", e.target.value, 1950)} /></Field>
+              <Field label="Vehicle year"><TextInput id="vehicle-year" type="number" min="1950" value={form.vehicleYear || ""} aria-invalid={invalidFieldId === "vehicle-year"} onChange={(e) => numericUpdate("vehicleYear", e.target.value)} /></Field>
               <Field label="Mileage"><TextInput type="number" min="0" value={form.mileage || ""} onChange={(e) => numericUpdate("mileage", e.target.value)} /></Field>
               <Field label="Make"><TextInput value={form.make} onChange={(e) => update("make", e.target.value)} placeholder="Toyota" /></Field>
               <Field label="Model"><TextInput value={form.model} onChange={(e) => update("model", e.target.value)} placeholder="Camry" /></Field>
@@ -322,7 +323,7 @@ export function CalculatorForm() {
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Repair category"><Select value={form.repairCategory} onChange={(e) => update("repairCategory", e.target.value)}>{repairCategories.map((category) => <option key={category}>{category}</option>)}</Select></Field>
               <Field label="Repair estimate you received" helper="Use the amount the shop gave you, including known fees and taxes when available."><TextInput id="repair-quote" type="number" min="0" value={form.repairQuote || ""} aria-invalid={invalidFieldId === "repair-quote"} onChange={(e) => numericUpdate("repairQuote", e.target.value)} /></Field>
-              <Field label="Estimated months this repair will keep the car usable" helper="Use your own assumption or ask the shop what the repair is expected to address."><TextInput id="usable-months" type="number" min="1" value={form.usableMonthsAfterRepair || ""} aria-invalid={invalidFieldId === "usable-months"} onChange={(e) => numericUpdate("usableMonthsAfterRepair", e.target.value, 1)} /></Field>
+              <Field label="Estimated months this repair will keep the car usable" helper="Use your own assumption or ask the shop what the repair is expected to address."><TextInput id="usable-months" type="number" min="1" value={form.usableMonthsAfterRepair || ""} aria-invalid={invalidFieldId === "usable-months"} onChange={(e) => numericUpdate("usableMonthsAfterRepair", e.target.value)} /></Field>
             </div>
 
             <div className="mt-8 rounded-lg border border-line bg-wash p-5">
@@ -356,7 +357,7 @@ export function CalculatorForm() {
               <Field label="New replacement purchase price"><TextInput id="new-price" type="number" min="0" value={form.newPurchasePrice || ""} aria-invalid={invalidFieldId === "new-price"} onChange={(e) => numericUpdate("newPurchasePrice", e.target.value)} /></Field>
               <Field label="Down payment"><TextInput type="number" min="0" value={form.downPayment || ""} onChange={(e) => numericUpdate("downPayment", e.target.value)} /></Field>
               <Field label="Estimated APR"><TextInput type="number" min="0" step="0.1" value={form.apr || ""} onChange={(e) => numericUpdate("apr", e.target.value)} /></Field>
-              <Field label="Loan term in months"><TextInput id="loan-term" type="number" min="1" value={form.loanTermMonths || ""} aria-invalid={invalidFieldId === "loan-term"} onChange={(e) => numericUpdate("loanTermMonths", e.target.value, 1)} /></Field>
+              <Field label="Loan term in months"><TextInput id="loan-term" type="number" min="1" value={form.loanTermMonths || ""} aria-invalid={invalidFieldId === "loan-term"} onChange={(e) => numericUpdate("loanTermMonths", e.target.value)} /></Field>
               <Field label="Estimated monthly insurance increase or decrease"><TextInput type="number" value={form.insuranceMonthlyDelta} onChange={(e) => update("insuranceMonthlyDelta", numberValue(e.target.value))} /></Field>
               <Field label="Estimated monthly fuel-cost difference"><TextInput type="number" value={form.fuelMonthlyDelta} onChange={(e) => update("fuelMonthlyDelta", numberValue(e.target.value))} /></Field>
               <Field label="Estimated monthly maintenance-cost difference"><TextInput type="number" value={form.maintenanceMonthlyDelta} onChange={(e) => update("maintenanceMonthlyDelta", numberValue(e.target.value))} /></Field>

@@ -1,10 +1,8 @@
 "use client";
 
 import { analyticsEvents, trackEvent } from "@/lib/analytics";
-import type { CalculatorResult } from "@/lib/calculator";
-
 type PartnerOfferProps = {
-  outcome: CalculatorResult["outcome"];
+  outcome: "repair" | "replace" | "close" | "safety";
 };
 
 type PartnerOffer = {
@@ -14,7 +12,7 @@ type PartnerOffer = {
   partnerType: "repair" | "replacement";
 };
 
-function getPartnerOffer(outcome: CalculatorResult["outcome"]): PartnerOffer | null {
+function getPartnerOffer(outcome: PartnerOfferProps["outcome"]): PartnerOffer | null {
   if (outcome === "repair" || outcome === "close") {
     const href = process.env.NEXT_PUBLIC_REPAIR_PARTNER_URL;
     if (!href) return null;

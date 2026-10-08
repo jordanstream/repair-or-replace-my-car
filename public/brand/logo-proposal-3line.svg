@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 330" role="img" aria-labelledby="title desc">
+  <title id="title">Car Second Opinion logo proposal</title>
+  <desc id="desc">Car Second Opinion in three lines of bold orange uppercase lettering with cream and dark outlines.</desc>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lilita+One&amp;display=swap');
+    .outer,.inner{font-family:'Lilita One','Arial Black',sans-serif;font-weight:400;text-anchor:middle;paint-order:stroke fill;stroke-linejoin:round}
+    .outer{fill:#C94724;stroke:#16201D;stroke-width:20px}
+    .inner{fill:#C94724;stroke:#F4F6F3;stroke-width:10px}
+  </style>
+  <g aria-hidden="true">
+    <text class="outer" x="260" y="112" font-size="126">CAR</text>
+    <text class="outer" x="260" y="214" font-size="104">SECOND</text>
+    <text class="outer" x="260" y="306" font-size="90">OPINION</text>
+    <text class="inner" x="260" y="112" font-size="126">CAR</text>
+    <text class="inner" x="260" y="214" font-size="104">SECOND</text>
+    <text class="inner" x="260" y="306" font-size="90">OPINION</text>
+  </g>
+</svg>

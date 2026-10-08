@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <ContentPage
       title="Terms of Use"
-      lastUpdated="July 15, 2026"
+      lastUpdated="July 25, 2026"
       showBottomLinks
       intro="Use Car Second Opinion as an educational decision-support tool, not as a substitute for professional advice."
     >
@@ -76,10 +76,20 @@ export default function TermsPage() {
       <section>
         <h2 className="text-2xl font-bold text-ink-950">Analytics and site measurement</h2>
         <p className="mt-3 leading-7">
-          We may use Google Search Console, Google Analytics 4, hosting logs, and similar tools to understand search
-          visibility, page usage, calculator engagement, technical errors, and general site performance. Analytics data
-          is not a professional review of your vehicle, repair quote, finances, insurance, or purchasing decision. More
-          detail is provided in the privacy policy.
+          We use Google Search Console, hosting logs, and similar technical tools to understand search visibility,
+          availability, security, and errors. Optional analytics services, including Google Analytics 4 or Vercel Speed
+          Insights, are disabled unless they are expressly enabled in the site configuration. More detail is provided in
+          the privacy policy.
+        </p>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold text-ink-950">Geographic scope</h2>
+        <p className="mt-3 leading-7">
+          The site is initially designed for users in the {siteConfig.audienceRegion}. Its terminology, examples, and
+          general assumptions may not reflect the taxes, fees, financing practices, insurance markets, vehicle markets,
+          or legal requirements of other countries. Access from another country does not mean the site is suitable for
+          use there.
         </p>
       </section>
 

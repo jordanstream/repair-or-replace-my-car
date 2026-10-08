@@ -2,7 +2,7 @@
 
 import { analyticsEvents, trackEvent } from "@/lib/analytics";
 
-export const checklistDownloadPath = "/downloads/major-car-repair-decision-checklist.txt";
+export const checklistDownloadPath = "/downloads/major-car-repair-decision-checklist.pdf";
 
 export function ChecklistDownloadLink({
   placement,

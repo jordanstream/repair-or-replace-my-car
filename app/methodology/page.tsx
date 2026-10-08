@@ -1,6 +1,6 @@
 import { ContentPage } from "@/components/ContentPage";
 import { Button } from "@/components/ui/Button";
-import { calculatorAssumptions } from "@/lib/calculator-constants";
+import { calculatorAssumptions, methodologyVersion } from "@/lib/calculator-constants";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -11,7 +11,7 @@ export const metadata = pageMetadata({
 
 export default function MethodologyPage() {
   return (
-    <ContentPage title="Methodology" intro="The calculator organizes user-entered estimates into a cash-flow comparison. It does not verify a diagnosis, predict future repairs, or calculate complete economic ownership cost.">
+    <ContentPage title="Methodology" intro={`Methodology v${methodologyVersion} organizes user-entered estimates into a cash-flow comparison. It does not verify a diagnosis, predict future repairs, or calculate complete economic ownership cost.`}>
       <section className="rounded-lg border border-brand-100 bg-brand-50 p-5">
         <h2 className="text-2xl font-bold text-ink-950">What the headline comparison means</h2>
         <p className="mt-3 leading-7">
@@ -47,6 +47,9 @@ export default function MethodologyPage() {
           during the comparison period, and entered monthly insurance, fuel, and maintenance differences. Taxes and fees
           are treated as upfront cash and are not also added to the financed amount.
         </p>
+        <p className="mt-3 leading-7">
+          If the current vehicle value is unknown, the calculator does not apply positive sale or trade-in value. It marks the result as limited information and explains that replacement financing and repair-to-value context are provisional. A broad value range uses its disclosed midpoint as a planning assumption.
+        </p>
       </section>
 
       <section className="rounded-lg border border-line bg-white p-5">
@@ -77,16 +80,15 @@ export default function MethodologyPage() {
       </section>
 
       <section className="rounded-lg border border-line bg-white p-5">
-        <h2 className="text-2xl font-bold text-ink-950">Close calls and uncertainty</h2>
+        <h2 className="text-2xl font-bold text-ink-950">Close calls and result stability</h2>
         <p className="mt-3 leading-7">
           The calculator compares repair cash flow with the lowest replacement cash flow. A close call is reported when
           the absolute difference is no more than the larger total multiplied by {Math.round(calculatorAssumptions.closeCallThresholdPercent * 100)}%,
           or {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(calculatorAssumptions.closeCallMinimumDollars)}, whichever is greater.
-          This threshold is a decision-confidence setting, not an industry standard.
+          This threshold is a result-stability setting, not an industry standard.
         </p>
         <p className="mt-3 leading-7">
-          Quote-confidence answers do not change the entered repair amount. Safety uncertainty overrides the financial
-          label so the result asks for professional review first.
+          The product labels a result More stable, Sensitive, or Limited information. This is not a probability or a prediction that a repair will succeed. It describes whether realistic input changes and missing evidence could change the leading financial option. Repair-evidence answers do not change the entered repair amount. Safety uncertainty overrides the financial label so the result asks for professional review first.
         </p>
       </section>
 
@@ -106,7 +108,12 @@ export default function MethodologyPage() {
           current payoff, vehicle values, insurance, taxes, and fees that matter to your situation. Financial comparisons
           should not override safety.
         </p>
-        <div className="mt-5"><Button href="/calculator">Compare my options</Button></div>
+        <div className="mt-5"><Button href="/calculator">Compare the three paths</Button></div>
+      </section>
+
+      <section className="rounded-lg border border-line bg-white p-5">
+        <h2 className="text-2xl font-bold text-ink-950">Version history</h2>
+        <p className="mt-3 leading-7"><strong>v{methodologyVersion} · July 19, 2026:</strong> Initial published version. Defines the three-option cash-flow comparison, close-call threshold, safety override, current-value unknown state, and result-stability explanation.</p>
       </section>
     </ContentPage>
   );

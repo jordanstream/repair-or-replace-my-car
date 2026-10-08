@@ -3,10 +3,17 @@
 import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/Fields";
+import { checklistDownloadPath } from "@/components/ChecklistDownloadLink";
 import { analyticsEvents, trackEvent } from "@/lib/analytics";
 import { siteConfig } from "@/lib/site";
 
-export function ChecklistSignup({ placement }: { placement: "results" | "guide" | "footer" | "checklist" }) {
+export function ChecklistSignup({
+  placement,
+  variant = "panel"
+}: {
+  placement: "results" | "guide" | "footer" | "checklist";
+  variant?: "panel" | "modal";
+}) {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "fallback" | "error">("idle");
@@ -69,22 +76,29 @@ export function ChecklistSignup({ placement }: { placement: "results" | "guide" 
     }
   }
 
+  const isModal = variant === "modal";
+
   return (
-    <section className="rounded-lg border border-line bg-white p-5">
-      <h2 className="text-xl font-bold text-ink-950">Get the repair-vs-replace checklist</h2>
-      <p className="mt-3 text-sm leading-6 text-ink-700">
-        Use a simple checklist for mechanic questions, numbers to compare, warning signs, and replacement assumptions.
-        Results are never blocked behind email.
-      </p>
-      <form className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]" onSubmit={requestChecklist}>
+    <section className={isModal ? "" : "rounded-lg border border-line bg-white p-5"}>
+      {!isModal ? (
+        <>
+          <h2 className="text-xl font-bold text-ink-950">Get the repair-vs-replace checklist</h2>
+          <p className="mt-3 text-sm leading-6 text-ink-700">
+            Send the printable PDF to your inbox before you approve a major repair or start shopping for a replacement.
+          </p>
+        </>
+      ) : null}
+      <form className={`${isModal ? "mt-0 grid gap-3" : "mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"}`} onSubmit={requestChecklist}>
         <label className="block">
           <span className="sr-only">Email address</span>
           <TextInput
+            name="email"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="you@example.com"
             autoComplete="email"
+            spellCheck={false}
             required
           />
         </label>
@@ -93,7 +107,7 @@ export function ChecklistSignup({ placement }: { placement: "results" | "guide" 
           <input tabIndex={-1} autoComplete="off" value={company} onChange={(event) => setCompany(event.target.value)} />
         </label>
         <Button type="submit" disabled={status === "loading"}>
-          {status === "loading" ? "Sending..." : "Email Me the Checklist"}
+          {status === "loading" ? "Sending…" : "Email me the checklist"}
         </Button>
       </form>
       {message ? (
@@ -102,6 +116,14 @@ export function ChecklistSignup({ placement }: { placement: "results" | "guide" 
           role="status"
         >
           {message}
+          {status === "success" ? (
+            <>
+              {" "}
+              <a className="font-semibold underline underline-offset-4" href={checklistDownloadPath} download>
+                Download it now.
+              </a>
+            </>
+          ) : null}
         </p>
       ) : null}
       <p className="mt-3 text-xs leading-5 text-ink-600">

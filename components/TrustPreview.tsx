@@ -23,18 +23,18 @@ export function TrustPreview({ compact = false }: { compact?: boolean }) {
   ];
 
   return (
-    <section className={compact ? "" : "rounded-lg border border-line bg-white p-5"}>
+    <section className={compact ? "" : "rounded-2xl border border-line bg-white p-5"}>
       <h2 className={compact ? "text-xl font-bold text-ink-950" : "text-2xl font-bold text-ink-950"}>
         How this estimate works
       </h2>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <dl className="mt-4 divide-y divide-line border-y border-line">
         {items.map((item) => (
-          <div key={item.title} className="rounded-md border border-line bg-wash p-4">
-            <h3 className="text-sm font-bold text-ink-950">{item.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-ink-700">{item.copy}</p>
+          <div key={item.title} className="grid gap-1 py-4 sm:grid-cols-[12rem_1fr] sm:gap-5">
+            <dt className="text-sm font-bold text-ink-950">{item.title}</dt>
+            <dd className="text-sm leading-6 text-ink-700">{item.copy}</dd>
           </div>
         ))}
-      </div>
+      </dl>
     </section>
   );
 }

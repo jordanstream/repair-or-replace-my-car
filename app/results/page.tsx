@@ -3,13 +3,13 @@ import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = {
   ...pageMetadata({
-  title: "Your Repair or Replace Results",
-  description: "Review your estimated repair and replacement cost comparison.",
-  path: "/results"
+    title: "Your Repair or Replace Results",
+    description: "Review your estimated repair and replacement cost comparison.",
+    path: "/results"
   }),
   robots: {
     index: false,
-    follow: false
+    follow: true
   }
 };
 
@@ -23,9 +23,11 @@ export default function ResultsPage() {
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <ResultsClient />
+    <main className="bg-canvas">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <ResultsClient />
+      </div>
     </main>
   );
 }

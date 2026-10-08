@@ -13,9 +13,9 @@ export function CostChart({ options, lowestKey }: { options: OptionCost[]; lowes
             <span className="font-semibold text-ink-800">{option.label}</span>
             <span className="tabular font-bold text-ink-950">{formatter.format(option.totalCost)}</span>
           </div>
-          <div className="h-4 overflow-hidden rounded-full bg-slate-100">
+          <div className="h-3 overflow-hidden rounded-full bg-wash">
             <div
-              className={`h-full rounded-full ${option.key === lowestKey ? "bg-success-700" : "bg-brand-600"}`}
+              className={`motion-chart-bar h-full rounded-full ${option.key === lowestKey ? "bg-success-700" : "bg-brand-600/70"}`}
               style={{ width: `${Math.max((option.totalCost / max) * 100, 6)}%` }}
             />
           </div>

@@ -11,37 +11,46 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          950: "#0f172a",
-          800: "#1e293b",
-          700: "#334155",
-          600: "#475569"
+          950: "#16201d",
+          800: "#2a3732",
+          700: "#33413b",
+          600: "#58645e",
+          400: "#89958f"
         },
         brand: {
-          700: "#1d4ed8",
-          600: "#2563eb",
-          50: "#eff6ff"
+          700: "#9f3218",
+          600: "#c94724",
+          100: "#f8d8cc",
+          50: "#fdf0eb"
         },
-        line: "#d9e2ec",
+        line: "#c7cec9",
+        "line-strong": "#89958f",
         surface: "#ffffff",
-        wash: "#f6f8fb",
+        canvas: "#f4f6f3",
+        wash: "#e9edea",
         success: {
-          700: "#047857",
-          50: "#ecfdf5"
+          700: "#0b6e4f",
+          100: "#d8eee6",
+          50: "#edf8f4"
         },
         caution: {
-          700: "#b45309",
-          50: "#fffbeb"
+          800: "#8a5700",
+          700: "#8a5700",
+          100: "#fbe8b8",
+          50: "#fff7df"
         },
         danger: {
-          700: "#b91c1c",
-          50: "#fef2f2"
+          800: "#821d1d",
+          700: "#a32525",
+          100: "#f6dada",
+          50: "#fff0f0"
         }
       },
       boxShadow: {
-        soft: "0 18px 50px rgba(15, 23, 42, 0.08)"
+        soft: "0 8px 20px rgba(22, 32, 29, 0.08)"
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"]
+        sans: ["var(--font-archivo)", "Arial", "system-ui", "sans-serif"]
       }
     }
   },

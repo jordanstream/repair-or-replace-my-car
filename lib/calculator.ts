@@ -6,6 +6,9 @@ export type ReliabilityImportance = "low" | "medium" | "high";
 export type ReplacementPreference = "used" | "new" | "both";
 export type RecommendationOutcome = "repair" | "replace" | "close" | "safety";
 export type ConfidenceLevel = "Low" | "Medium" | "High";
+export type ResultStability = "more_stable" | "sensitive" | "limited_information";
+export type VehicleValueStatus = "amount" | "range" | "unknown";
+export type VehicleValueRange = "under-3000" | "3000-7000" | "7000-15000" | "15000-25000" | "over-25000";
 
 export type CalculatorInput = {
   vehicleYear: number;
@@ -13,6 +16,8 @@ export type CalculatorInput = {
   model: string;
   mileage: number;
   currentValue: number;
+  currentValueStatus?: VehicleValueStatus;
+  currentValueRange?: VehicleValueRange;
   currentLoanPayoff: number;
   currentMonthlyPayment: number;
   currentPaymentsRemaining: number;
@@ -71,6 +76,9 @@ export type CalculatorResult = {
   lowestOption: OptionCost;
   outcome: RecommendationOutcome;
   confidence: ConfidenceLevel;
+  resultStability: ResultStability;
+  stabilityReasons: string[];
+  vehicleValueKnown: boolean;
   headline: string;
   summary: string;
   drivers: string[];
@@ -134,7 +142,12 @@ function remainingLoanBalance(principal: number, aprPercent: number, termMonths:
   return Math.max(principal * growth - payment * ((growth - 1) / monthlyRate), 0);
 }
 
-function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", equity: number): OptionCost {
+function buildReplacementOption(
+  input: CalculatorInput,
+  kind: "used" | "new",
+  equity: number,
+  vehicleValueKnown: boolean
+): OptionCost {
   const purchasePrice = kind === "used" ? input.usedPurchasePrice : input.newPurchasePrice;
   const endingVehicleValue = kind === "used" ? input.usedEndingValue : input.newEndingValue;
 
@@ -178,6 +191,7 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
     endingEquity,
     depreciationEstimate,
     assumptionsNotIncluded: [
+      ...(!vehicleValueKnown ? ["A verified current vehicle value; replacement financing assumes no positive sale or trade-in value"] : []),
       ...(endingVehicleValue === undefined ? ["Vehicle depreciation and ending equity"] : []),
       "Unentered repairs, insurance, fuel, taxes, fees, and financing changes"
     ],
@@ -186,7 +200,9 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
       `${money(monthlyLoanPayment)} estimated monthly loan payment counted for ${loanPaymentMonths} month${loanPaymentMonths === 1 ? "" : "s"}`,
       ...(loanPaymentMonths < input.comparisonMonths ? [`Loan payments stop after the entered ${input.loanTermMonths}-month term`] : []),
       equity >= 0
-        ? `${money(equity)} current-car equity applied toward replacement financing`
+        ? vehicleValueKnown
+          ? `${money(equity)} current-car equity applied toward replacement financing`
+          : "No positive current-car equity applied because the vehicle value is unknown"
         : `${money(Math.abs(equity))} current-car negative equity added to replacement financing`,
       ...(depreciationEstimate === undefined
         ? ["Depreciation excluded because no ending value was entered"]
@@ -197,10 +213,11 @@ function buildReplacementOption(input: CalculatorInput, kind: "used" | "new", eq
 
 export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorResult {
   const input = sanitizeInput(rawInput);
+  const vehicleValueKnown = input.currentValueStatus !== "unknown" && input.currentValue > 0;
   const safetyFlag = hasSafetyFlag(input);
   const comparisonMonths = input.comparisonMonths;
-  const equity = input.currentValue - input.currentLoanPayoff;
-  const repairCostToValueRatio = input.currentValue > 0 ? input.repairQuote / input.currentValue : 1;
+  const equity = (vehicleValueKnown ? input.currentValue : 0) - input.currentLoanPayoff;
+  const repairCostToValueRatio = vehicleValueKnown ? input.repairQuote / input.currentValue : 0;
   const usableMonths = Math.max(input.usableMonthsAfterRepair, 1);
   const repairCostPerUsableMonth = input.repairQuote / usableMonths;
   const quoteConfidenceAnswers = [input.itemizedEstimate, input.testingExplained, input.secondShopConfirmed];
@@ -223,7 +240,9 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     upfrontCash: input.repairQuote,
     remainingLoanBalanceAtEnd: input.currentPaymentsRemaining <= comparisonMonths ? 0 : undefined,
     assumptionsNotIncluded: [
-      "Current vehicle value, depreciation, and ending equity",
+      vehicleValueKnown
+        ? "Current vehicle depreciation and ending equity"
+        : "Current vehicle value, depreciation, and ending equity",
       ...(input.currentPaymentsRemaining > comparisonMonths ? ["Current vehicle loan balance at the end of the period"] : []),
       ...(input.expectedFutureMaintenance === 0 ? ["Additional future maintenance and repairs"] : []),
       "Unentered repairs, insurance, fuel, taxes, and other ownership changes"
@@ -237,8 +256,8 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
 
   const options = [
     repairOption,
-    ...(input.replacementPreference !== "new" ? [buildReplacementOption(input, "used", equity)] : []),
-    ...(input.replacementPreference !== "used" ? [buildReplacementOption(input, "new", equity)] : [])
+    buildReplacementOption(input, "used", equity, vehicleValueKnown),
+    buildReplacementOption(input, "new", equity, vehicleValueKnown)
   ];
   const lowestOption = options.reduce((lowest, option) => (option.totalCost < lowest.totalCost ? option : lowest));
   const bestReplacement = options
@@ -256,8 +275,7 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     input.expectedFutureMaintenance > input.repairQuote * 0.35,
     input.firstMajorRepair !== "yes",
     input.reliabilityImportance === "high",
-    input.essentialVehicleUse,
-    repairCostToValueRatio >= calculatorAssumptions.repairToValueConcernRatio,
+    vehicleValueKnown && repairCostToValueRatio >= calculatorAssumptions.repairToValueConcernRatio,
     repairCostPerUsableMonth >= calculatorAssumptions.highRepairPerUsableMonth,
     safetyFlag
   ].filter(Boolean).length;
@@ -276,6 +294,27 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
         ? "High"
         : "Medium";
 
+  const missingQuoteEvidence = quoteConfidenceAnswers.some((answer) => answer === undefined);
+  const resultStability: ResultStability = safetyFlag || !vehicleValueKnown || missingQuoteEvidence
+    ? "limited_information"
+    : outcome === "close" || quoteConfidenceLimited || !largeCostSeparation || riskFactors >= 3
+      ? "sensitive"
+      : "more_stable";
+  const stabilityReasons = resultStability === "limited_information"
+    ? [
+        ...(!vehicleValueKnown ? ["Your current vehicle value is unknown, so sale, trade-in, and equity effects are provisional."] : []),
+        ...(missingQuoteEvidence ? ["One or more repair-evidence checks have not been answered."] : []),
+        ...(safetyFlag ? ["A possible safety concern requires professional review before relying on the financial comparison."] : [])
+      ]
+    : resultStability === "sensitive"
+      ? [
+          ...(outcome === "close" ? ["The leading repair and replacement estimates are within the close-call range."] : []),
+          ...(quoteConfidenceLimited ? ["The repair estimate has evidence questions that are still unresolved."] : []),
+          ...(!largeCostSeparation && outcome !== "close" ? ["A realistic change to a key assumption could narrow or reverse the difference."] : []),
+          ...(riskFactors >= 3 ? ["Several reliability or cost assumptions could materially affect the comparison."] : [])
+        ]
+      : ["The leading option remains ahead by more than the tested close-call range and the key evidence inputs are present."];
+
   const period = `${comparisonMonths} months`;
   const winningFinancialOption = outcome === "replace" ? (bestReplacement ?? lowestOption) : repairOption;
   const comparisonOption = outcome === "replace" ? repairOption : bestReplacement;
@@ -284,6 +323,8 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
   const headline =
     outcome === "safety"
       ? "Safety or structural concerns need professional review before relying on this comparison"
+      : !vehicleValueKnown
+        ? `${lowestOption.label} is currently lower, but your vehicle value is still missing.`
       : outcome === "close"
         ? "The estimated costs are close enough that another repair quote, a different replacement price, or one changed assumption could change the result."
         : `${lowestOption.label} appears less expensive under the assumptions you entered.`;
@@ -291,6 +332,8 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
   const summary =
     outcome === "safety"
       ? "This tool cannot evaluate vehicle safety. Have a qualified professional inspect the vehicle before making a decision or continuing to drive it."
+      : !vehicleValueKnown
+        ? `The current estimates differ by ${money(replacementGap)} before positive sale, trade-in, or repair-to-value effects are included. Add a ballpark value to strengthen the comparison.`
       : outcome === "close"
         ? `The cash-flow estimates differ by ${money(replacementGap)}. The close-call limit for these totals is ${money(closeThreshold)}.`
         : `Over ${period}, the estimated cash paid is approximately ${money(savings)} lower than ${
@@ -300,14 +343,19 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
   const drivers = [
     `${repairOption.label}: ${money(repairOption.totalCost)} estimated cash paid over ${period}`,
     bestReplacement ? `${bestReplacement.label}: ${money(bestReplacement.totalCost)} estimated cash paid over ${period}` : "Replacement option limited by your preference",
-    repairCostToValueRatio > 0.5
+    vehicleValueKnown && repairCostToValueRatio > 0.5
       ? `Repair quote equals about ${Math.round(repairCostToValueRatio * 100)}% of current estimated value`
-      : `Repair quote is about ${money(repairCostPerUsableMonth)} per expected usable month`
+      : vehicleValueKnown
+        ? `Repair quote is about ${money(repairCostPerUsableMonth)} per expected usable month`
+        : "Current vehicle value is unknown, so the repair-to-value comparison is not available"
   ];
 
   const changeFactors = [
     ...(quoteConfidenceLimited
       ? ["A second inspection or itemized estimate could change the repair diagnosis or amount used in this comparison."]
+      : []),
+    ...(!vehicleValueKnown
+      ? ["A ballpark current vehicle value could materially change replacement equity and the repair-to-value comparison."]
       : []),
     input.wholeVehicleCondition === "not-sure"
       ? "A broader inspection could identify other near-term work that is not in the amount you entered."
@@ -325,6 +373,9 @@ export function calculateRepairOrReplace(rawInput: CalculatorInput): CalculatorR
     lowestOption,
     outcome,
     confidence,
+    resultStability,
+    stabilityReasons,
+    vehicleValueKnown,
     headline,
     summary,
     drivers,

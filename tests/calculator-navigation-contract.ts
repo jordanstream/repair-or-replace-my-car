@@ -13,7 +13,7 @@ const contracts = [
   ["instant step positioning", /scrollIntoView\(\{ behavior: "auto"/],
   ["validation summary focus", /errorSummaryRef\.current\?\.focus/],
   ["validation does not advance", /showValidationError\(validation\[0\], validation\[1\]\);\s*return;/],
-  ["step announcement text", /Step \$\{step\} of 3:/],
+  ["step announcement text", /Step \$\{step\} of 4:/],
   ["stored-input edit recovery", /parseStoredCalculatorInput/]
 ] as const;
 

@@ -3,8 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: "Aptos", "Segoe UI", system-ui, sans-serif;
   color-scheme: light;
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-move: cubic-bezier(0.65, 0, 0.35, 1);
+  --motion-fast: 140ms;
+  --motion-standard: 220ms;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 * {
@@ -13,11 +21,9 @@
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 34rem),
-    linear-gradient(180deg, #f8fafc 0%, #ffffff 42%, #f6f8fb 100%);
-  color: #0f172a;
-  font-family: var(--font-sans);
+  background: #f4f6f3;
+  color: #16201d;
+  font-family: var(--font-archivo), Arial, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -28,8 +34,8 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid #2563eb;
-  outline-offset: 3px;
+  outline: 3px solid #c94724;
+  outline-offset: 2px;
 }
 
 .sr-only {
@@ -59,22 +65,361 @@ li {
   font-variant-numeric: tabular-nums;
 }
 
+::selection {
+  background: #f8d8cc;
+  color: #16201d;
+}
+
 .print-only {
   display: none;
 }
 
-@media (hover: hover) {
+.motion-button {
+  touch-action: manipulation;
+  transition:
+    transform var(--motion-fast) var(--motion-ease-out),
+    background-color var(--motion-standard) ease,
+    border-color var(--motion-standard) ease,
+    color var(--motion-standard) ease,
+    box-shadow var(--motion-standard) ease;
+}
+
+.motion-button:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.nav-link {
+  transition:
+    border-color var(--motion-standard) ease,
+    color var(--motion-standard) ease;
+}
+
+.motion-hero-copy > * {
+  animation: motion-rise 440ms var(--motion-ease-out) both;
+}
+
+.motion-page-intro > * {
+  animation: motion-rise 360ms var(--motion-ease-out) both;
+}
+
+.motion-hero-copy > :nth-child(2),
+.motion-page-intro > :nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.motion-hero-copy > :nth-child(3),
+.motion-page-intro > :nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.motion-hero-copy > :nth-child(4) {
+  animation-delay: 130ms;
+}
+
+.motion-hero-copy > :nth-child(5) {
+  animation-delay: 170ms;
+}
+
+.motion-hero-figure {
+  animation: motion-figure-in 500ms 70ms var(--motion-ease-out) both;
+}
+
+.motion-hero-path {
+  animation: motion-path-in 360ms var(--motion-ease-out) both;
+}
+
+.motion-hero-path:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.motion-hero-path:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.motion-step {
+  animation: motion-step-in 240ms var(--motion-ease-out) both;
+}
+
+.motion-feedback {
+  animation: motion-feedback-in 200ms var(--motion-ease-out) both;
+}
+
+.motion-progress {
+  transform-origin: left center;
+  transition: transform 240ms var(--motion-ease-move);
+}
+
+.motion-chart-bar {
+  transform-origin: left center;
+  animation: motion-bar-grow 560ms var(--motion-ease-out) both;
+}
+
+.motion-menu {
+  transform-origin: top center;
+  animation: motion-menu-in 200ms var(--motion-ease-out) both;
+}
+
+.motion-menu-out {
+  pointer-events: none;
+  transform-origin: top center;
+  animation: motion-menu-out 160ms var(--motion-ease-out) both;
+}
+
+.motion-menu-item {
+  animation: motion-menu-item-in 220ms var(--motion-ease-out) both;
+}
+
+.motion-menu-item:nth-child(2) {
+  animation-delay: 35ms;
+}
+
+.motion-menu-item:nth-child(3) {
+  animation-delay: 70ms;
+}
+
+.motion-menu-item:nth-child(4) {
+  animation-delay: 105ms;
+}
+
+.motion-menu-item:nth-child(n + 5) {
+  animation-delay: 140ms;
+}
+
+.motion-dialog-backdrop {
+  animation: motion-backdrop-in 220ms var(--motion-ease-out) both;
+}
+
+.motion-dialog-panel {
+  transform-origin: center top;
+  animation: motion-dialog-in 220ms var(--motion-ease-out) both;
+}
+
+.motion-dialog-backdrop-out {
+  pointer-events: none;
+  animation: motion-backdrop-out 160ms var(--motion-ease-out) both;
+}
+
+.motion-dialog-panel-out {
+  pointer-events: none;
+  transform-origin: center top;
+  animation: motion-dialog-out 160ms var(--motion-ease-out) both;
+}
+
+.motion-details > summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  list-style: none;
+}
+
+.motion-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.motion-details > summary::after {
+  content: "›";
+  flex: 0 0 auto;
+  color: #c94724;
+  font-size: 1.5rem;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform var(--motion-standard) var(--motion-ease-move);
+}
+
+.motion-details[open] > summary::after {
+  transform: rotate(90deg);
+}
+
+.motion-details[open] > :not(summary) {
+  animation: motion-disclosure-in 200ms var(--motion-ease-out) both;
+}
+
+.motion-link-arrow-icon {
+  transition: transform var(--motion-fast) var(--motion-ease-out);
+}
+
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-figure-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-path-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-step-in {
+  from {
+    opacity: 0;
+    transform: translate3d(12px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-feedback-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes motion-menu-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-menu-item-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -5px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-menu-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -5px, 0) scaleY(0.99);
+  }
+}
+
+@keyframes motion-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes motion-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes motion-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-dialog-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(0.99);
+  }
+}
+
+@keyframes motion-disclosure-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -5px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .motion-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(22, 32, 29, 0.12);
+  }
+
+  .motion-button:active:not(:disabled) {
+    transform: scale(0.975);
+    box-shadow: 0 2px 4px rgba(22, 32, 29, 0.1);
+  }
+
+  .motion-link-arrow:hover .motion-link-arrow-icon {
+    transform: translateX(4px);
+  }
+
   .hover-lift {
     transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   }
 
   .hover-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.1);
+    box-shadow: 0 8px 20px rgba(22, 32, 29, 0.1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html [data-reveal],
+  html [data-reveal] .motion-list-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
   *,
   *::before,
   *::after {

@@ -1,4 +1,5 @@
 export const analyticsEvents = {
+  calculatorViewed: "calculator_viewed",
   calculatorStarted: "calculator_started",
   calculatorStepCompleted: "calculator_step_completed",
   calculatorStepBack: "calculator_step_back",
@@ -21,7 +22,14 @@ export const analyticsEvents = {
   nextStepClicked: "next_step_clicked",
   externalRepairSearchClicked: "external_repair_search_clicked",
   externalReplacementLinkClicked: "external_replacement_link_clicked",
-  printResultsClicked: "print_results_clicked"
+  printResultsClicked: "print_results_clicked",
+  vehicleValueUnknownSelected: "vehicle_value_unknown_selected",
+  calculatorReviewed: "calculator_reviewed",
+  resultViewed: "result_viewed",
+  resultRecalculated: "result_recalculated",
+  informedNextStepSelected: "informed_next_step_selected",
+  resultSummaryCopied: "result_summary_copied",
+  savedResultCleared: "saved_result_cleared"
 } as const;
 
 export type AnalyticsEvent = (typeof analyticsEvents)[keyof typeof analyticsEvents];
@@ -39,7 +47,12 @@ declare global {
 export function trackEvent(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>) {
   const eventProperties = properties ?? {};
 
-  if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && window.gtag) {
+  if (
+    typeof window !== "undefined" &&
+    process.env.NEXT_PUBLIC_ANALYTICS_ENABLED === "true" &&
+    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID &&
+    window.gtag
+  ) {
     window.gtag("event", event, eventProperties);
   }
 

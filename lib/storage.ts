@@ -5,6 +5,8 @@ const reliabilityValues = ["low", "medium", "high"];
 const preferenceValues = ["used", "new", "both"];
 const periodValues = [12, 24, 36];
 const quoteConfirmationValues = [...threeWayValues, "not-yet"];
+const vehicleValueStatusValues = ["amount", "range", "unknown"];
+const vehicleValueRangeValues = ["under-3000", "3000-7000", "7000-15000", "15000-25000", "over-25000"];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -46,6 +48,8 @@ export function isStoredCalculatorInput(value: unknown): value is CalculatorInpu
     (value.zipCode === undefined || typeof value.zipCode === "string") &&
     (value.usedEndingValue === undefined || isFiniteNumber(value.usedEndingValue)) &&
     (value.newEndingValue === undefined || isFiniteNumber(value.newEndingValue)) &&
+    (value.currentValueStatus === undefined || vehicleValueStatusValues.includes(String(value.currentValueStatus))) &&
+    (value.currentValueRange === undefined || vehicleValueRangeValues.includes(String(value.currentValueRange))) &&
     threeWayValues.includes(String(value.safeToDrive)) &&
     Object.values(value.safetyConcerns).every((entry) => threeWayValues.includes(String(entry))) &&
     threeWayValues.includes(String(value.firstMajorRepair)) &&

@@ -156,6 +156,27 @@ console.log("close-call percentage, dollar minimum, and clear result: passed");
 const safety = calculateRepairOrReplace({ ...base, safeToDrive: "not-sure" });
 if (safety.outcome !== "safety") throw new Error("Safety uncertainty should override the financial label");
 
+const unknownVehicleValue = calculateRepairOrReplace({
+  ...base,
+  currentValue: 0,
+  currentValueStatus: "unknown",
+  replacementPreference: "used"
+});
+if (unknownVehicleValue.resultStability !== "limited_information" || unknownVehicleValue.vehicleValueKnown) {
+  throw new Error("Unknown vehicle value should produce a disclosed limited-information result");
+}
+if (unknownVehicleValue.options.length !== 3) {
+  throw new Error("Repair, used replacement, and new replacement must remain visible");
+}
+console.log("unknown vehicle value and three-option contract: passed");
+
+const essentialUse = calculateRepairOrReplace({ ...base, essentialVehicleUse: true });
+const nonessentialUse = calculateRepairOrReplace({ ...base, essentialVehicleUse: false });
+if (essentialUse.resultStability !== nonessentialUse.resultStability) {
+  throw new Error("Essential vehicle use should tailor context without changing result stability");
+}
+console.log("essential use remains personal context: passed");
+
 const limitedQuoteConfidence = calculateRepairOrReplace({
   ...base,
   itemizedEstimate: "no",

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 390" role="img" aria-labelledby="title desc">
+  <title id="title">Car Second Opinion logo proposal</title>
+  <desc id="desc">Car Second above Opinion in two lines of evenly sized rounded orange uppercase lettering, enclosed by one cream and graphite silhouette border.</desc>
+  <defs>
+    <filter id="unified-badge" x="-20%" y="-30%" width="140%" height="170%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="32" result="joined-expanded"/>
+      <feMorphology in="joined-expanded" operator="erode" radius="32" result="joined-source"/>
+      <feMorphology in="joined-source" operator="dilate" radius="22" result="outer-shape"/>
+      <feFlood flood-color="#16201D" result="outer-color"/>
+      <feComposite in="outer-color" in2="outer-shape" operator="in" result="outer"/>
+      <feMorphology in="joined-source" operator="dilate" radius="12" result="inner-shape"/>
+      <feFlood flood-color="#F4F6F3" result="inner-color"/>
+      <feComposite in="inner-color" in2="inner-shape" operator="in" result="inner"/>
+      <feMerge>
+        <feMergeNode in="outer"/>
+        <feMergeNode in="inner"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <style>
+    @font-face {
+      font-family: 'Fredoka';
+      src: url('../fonts/Fredoka-Bold-Latin.woff2') format('woff2');
+      font-style: normal;
+      font-weight: 700;
+    }
+    .wordmark {
+      fill: #C94724;
+      font-family: 'Fredoka', 'Arial Rounded MT Bold', 'Arial Black', sans-serif;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+  </style>
+  <g class="wordmark" filter="url(#unified-badge)" aria-hidden="true">
+    <text x="380" y="190" font-size="124" letter-spacing="-2">CAR SECOND</text>
+    <text x="380" y="310" font-size="124" letter-spacing="15">OPINION</text>
+  </g>
+</svg>

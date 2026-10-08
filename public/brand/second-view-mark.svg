@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title desc">
+  <title id="title">Car Second Opinion</title>
+  <desc id="desc">Two viewpoints facing one evidence point.</desc>
+  <path d="M8 4.5C5.4 6.2 4 8.8 4 12s1.4 5.8 4 7.5" fill="none" stroke="#16201D" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M16 4.5c2.6 1.7 4 4.3 4 7.5s-1.4 5.8-4 7.5" fill="none" stroke="#16201D" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="10" y="10" width="4" height="4" rx="1" fill="#C94724"/>
+</svg>

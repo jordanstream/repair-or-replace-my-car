@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Field, RadioGroup, Select, TextInput } from "@/components/ui/Fields";
 import { analyticsEvents, trackEvent } from "@/lib/analytics";
-import { calculatorAssumptions, repairCategories, safetyConcernLabels } from "@/lib/calculator-constants";
-import type { CalculatorInput, QuoteConfirmation, ThreeWay } from "@/lib/calculator";
+import { calculatorAssumptions, methodologyVersion, repairCategories, safetyConcernLabels, vehicleValueRanges } from "@/lib/calculator-constants";
+import type { CalculatorInput, QuoteConfirmation, ThreeWay, VehicleValueRange, VehicleValueStatus } from "@/lib/calculator";
 import { parseStoredCalculatorInput } from "@/lib/storage";
 
-const stepNames = ["Current vehicle", "Repair estimate", "Replacement costs"] as const;
+const stepNames = ["Current situation", "Repair evidence", "Replacement assumptions", "Review"] as const;
 
 const threeWayOptions = [
   { label: "Yes", value: "yes" },
@@ -31,6 +31,8 @@ const defaults: CalculatorInput = {
   model: "",
   mileage: 0,
   currentValue: 0,
+  currentValueStatus: "unknown",
+  currentValueRange: undefined,
   currentLoanPayoff: 0,
   currentMonthlyPayment: 0,
   currentPaymentsRemaining: 0,
@@ -67,6 +69,8 @@ function numberValue(value: string) {
   return Number.isFinite(Number(value)) ? Number(value) : 0;
 }
 
+const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
 export function CalculatorForm() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<CalculatorInput>(defaults);
@@ -80,13 +84,22 @@ export function CalculatorForm() {
   const editTarget = searchParams.get("edit");
 
   useEffect(() => {
+    const entrySource = !document.referrer
+      ? "direct"
+      : new URL(document.referrer).origin === window.location.origin
+        ? "internal"
+        : "external";
+    trackEvent(analyticsEvents.calculatorViewed, { entry_source: entrySource });
+  }, []);
+
+  useEffect(() => {
     if (!editTarget) return;
     const stored = parseStoredCalculatorInput(window.localStorage.getItem("repair-or-replace-input"));
     if (!stored) return;
     const targetStep = editTarget === "vehicle" ? 1 : editTarget === "repair" ? 2 : 3;
     trackEvent(analyticsEvents.assumptionsEdited, { section: editTarget });
     requestAnimationFrame(() => {
-      setForm(stored);
+      setForm({ ...stored, currentValueStatus: stored.currentValueStatus ?? (stored.currentValue > 0 ? "amount" : "unknown") });
       setStep(targetStep);
       requestAnimationFrame(() => {
         stepHeadingRef.current?.focus({ preventScroll: true });
@@ -110,7 +123,7 @@ export function CalculatorForm() {
   function showValidationError(message: string, fieldId: string) {
     setFormError(message);
     setInvalidFieldId(fieldId);
-    trackEvent(analyticsEvents.calculatorValidationError, { step, field: fieldId });
+    trackEvent(analyticsEvents.calculatorValidationError, { step_number: step, field_id: fieldId });
     requestAnimationFrame(() => {
       errorSummaryRef.current?.focus({ preventScroll: true });
       errorSummaryRef.current?.scrollIntoView({ behavior: "auto", block: "center" });
@@ -120,7 +133,8 @@ export function CalculatorForm() {
   function validateStep(stepToValidate: number) {
     if (stepToValidate === 1) {
       if (form.vehicleYear < 1950) return ["Enter a vehicle year of 1950 or later.", "vehicle-year"] as const;
-      if (form.currentValue <= 0) return ["Enter your current estimated vehicle value.", "current-value"] as const;
+      if ((form.currentValueStatus ?? (form.currentValue > 0 ? "amount" : "unknown")) === "amount" && form.currentValue <= 0) return ["Enter a ballpark vehicle value, choose a range, or select I don’t know.", "current-value"] as const;
+      if (form.currentValueStatus === "range" && !form.currentValueRange) return ["Choose a current vehicle value range, or select I don’t know.", "current-value-range"] as const;
       if (form.currentLoanPayoff > 0 && form.currentMonthlyPayment <= 0) return ["Enter your current monthly payment.", "current-monthly-payment"] as const;
       if (form.currentLoanPayoff > 0 && form.currentPaymentsRemaining < 1) return ["Enter the number of monthly payments remaining.", "current-payments-remaining"] as const;
       if (form.currentLoanPayoff === 0 && (form.currentMonthlyPayment > 0 || form.currentPaymentsRemaining > 0)) return ["Enter the current loan payoff amount, or set the other current-loan fields to $0.", "current-loan-payoff"] as const;
@@ -130,8 +144,8 @@ export function CalculatorForm() {
       if (form.usableMonthsAfterRepair < 1) return ["Enter at least 1 expected usable month after repair.", "usable-months"] as const;
     }
     if (stepToValidate === 3) {
-      if (form.replacementPreference !== "new" && form.usedPurchasePrice <= 0) return ["Enter a used replacement purchase price.", "used-price"] as const;
-      if (form.replacementPreference !== "used" && form.newPurchasePrice <= 0) return ["Enter a new replacement purchase price.", "new-price"] as const;
+      if (form.usedPurchasePrice <= 0) return ["Enter a realistic used replacement purchase price.", "used-price"] as const;
+      if (form.newPurchasePrice <= 0) return ["Enter a realistic new replacement purchase price.", "new-price"] as const;
       if (form.loanTermMonths < 1) return ["Enter a loan term of at least 1 month.", "loan-term"] as const;
     }
     return null;
@@ -144,10 +158,16 @@ export function CalculatorForm() {
         showValidationError(validation[0], validation[1]);
         return;
       }
-      if (step === 1) trackEvent(analyticsEvents.calculatorStarted);
-      trackEvent(analyticsEvents.calculatorStepCompleted, { step });
+      if (step === 1) trackEvent(analyticsEvents.calculatorStarted, { step_name: stepNames[0] });
+      trackEvent(analyticsEvents.calculatorStepCompleted, { step_number: step, step_name: stepNames[step - 1] });
       if (step === 2 && (form.itemizedEstimate || form.testingExplained || form.secondShopConfirmed)) {
-        trackEvent(analyticsEvents.quoteConfidenceCompleted);
+        trackEvent(analyticsEvents.quoteConfidenceCompleted, { step_number: 2 });
+      }
+      if (nextStep === 4) {
+        trackEvent(analyticsEvents.calculatorReviewed, {
+          vehicle_value_status: form.currentValueStatus ?? "unknown",
+          repair_evidence_complete: Boolean(form.itemizedEstimate && form.testingExplained && form.secondShopConfirmed)
+        });
       }
     } else {
       trackEvent(analyticsEvents.calculatorStepBack, { from_step: step, to_step: nextStep });
@@ -165,16 +185,19 @@ export function CalculatorForm() {
   }
 
   function submit() {
-    const validation = validateStep(3);
-    if (validation) {
-      showValidationError(validation[0], validation[1]);
-      return;
+    for (const stepToValidate of [1, 2, 3]) {
+      const validation = validateStep(stepToValidate);
+      if (validation) {
+        setStep(stepToValidate);
+        requestAnimationFrame(() => showValidationError(validation[0], validation[1]));
+        return;
+      }
     }
 
     setFormError("");
     setInvalidFieldId("");
-    trackEvent(analyticsEvents.calculatorStepCompleted, { step: 3 });
-    trackEvent(analyticsEvents.calculatorCompleted, { comparisonMonths: form.comparisonMonths });
+    trackEvent(analyticsEvents.calculatorStepCompleted, { step_number: 4, step_name: stepNames[3] });
+    trackEvent(analyticsEvents.calculatorCompleted, { comparison_months: form.comparisonMonths, methodology_version: methodologyVersion });
     localStorage.setItem("repair-or-replace-input", JSON.stringify(form));
     router.push("/results");
   }
@@ -193,21 +216,21 @@ export function CalculatorForm() {
           role="progressbar"
           aria-label="Calculator progress"
           aria-valuemin={1}
-          aria-valuemax={3}
+          aria-valuemax={4}
           aria-valuenow={step}
-          aria-valuetext={`Step ${step} of 3: ${stepNames[step - 1]}`}
+          aria-valuetext={`Step ${step} of 4: ${stepNames[step - 1]}`}
         >
           <div className="mb-3 flex items-center justify-between text-sm font-semibold text-ink-700">
-            <span>Step {step} of 3</span>
-            <span>{Math.round((step / 3) * 100)}%</span>
+            <span>Step {step} of 4 · {stepNames[step - 1]}</span>
+            <span>{Math.round((step / 4) * 100)}%</span>
           </div>
           <div className="h-2 rounded-full bg-slate-100">
-            <div className="h-2 rounded-full bg-brand-600 transition-[width]" style={{ width: `${(step / 3) * 100}%` }} />
+            <div className="motion-progress h-2 w-full rounded-full bg-brand-600" style={{ transform: `scaleX(${step / 4})` }} />
           </div>
         </div>
 
         {formError ? (
-          <div ref={errorSummaryRef} tabIndex={-1} className="mb-6 scroll-mt-24 focus:outline-none">
+          <div ref={errorSummaryRef} tabIndex={-1} className="motion-feedback mb-6 scroll-mt-24 focus:outline-none">
             <Alert tone="danger">
               <p className="font-semibold">Check this entry before continuing</p>
               <p className="mt-1">{formError}</p>
@@ -217,18 +240,68 @@ export function CalculatorForm() {
         ) : null}
 
         {step === 1 ? (
-          <section aria-labelledby="current-vehicle-heading">
-            <h2 id="current-vehicle-heading" {...headingProps}><span className="sr-only">Step 1 of 3: </span>Your current vehicle</h2>
-            <p className="mt-2 max-w-2xl leading-7 text-ink-700">Start with the vehicle you own today. Use estimates you can verify rather than ideal values.</p>
+          <section aria-labelledby="current-vehicle-heading" className="motion-step">
+            <h2 id="current-vehicle-heading" {...headingProps}><span className="sr-only">Step 1 of 4: </span>Your current situation</h2>
+            <p className="mt-2 max-w-2xl leading-7 text-ink-700">Start with what you know today. A ballpark is enough where an exact number is not available.</p>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Vehicle year"><TextInput id="vehicle-year" type="number" min="1950" value={form.vehicleYear || ""} aria-invalid={invalidFieldId === "vehicle-year"} onChange={(e) => numericUpdate("vehicleYear", e.target.value, 1950)} /></Field>
               <Field label="Mileage"><TextInput type="number" min="0" value={form.mileage || ""} onChange={(e) => numericUpdate("mileage", e.target.value)} /></Field>
               <Field label="Make"><TextInput value={form.make} onChange={(e) => update("make", e.target.value)} placeholder="Toyota" /></Field>
               <Field label="Model"><TextInput value={form.model} onChange={(e) => update("model", e.target.value)} placeholder="Camry" /></Field>
-              <Field label="Estimated current vehicle value" helper="Use a realistic trade-in or private-sale estimate."><TextInput id="current-value" type="number" min="0" value={form.currentValue || ""} aria-invalid={invalidFieldId === "current-value"} onChange={(e) => numericUpdate("currentValue", e.target.value)} /></Field>
               <Field label="Current loan payoff amount" helper="Enter $0 if you do not have a loan on this vehicle."><TextInput id="current-loan-payoff" type="number" min="0" value={form.currentLoanPayoff || ""} aria-invalid={invalidFieldId === "current-loan-payoff"} onChange={(e) => numericUpdate("currentLoanPayoff", e.target.value)} /></Field>
               <Field label="Current monthly payment" helper="Enter $0 if you do not have a current vehicle loan."><TextInput id="current-monthly-payment" type="number" min="0" value={form.currentMonthlyPayment || ""} aria-invalid={invalidFieldId === "current-monthly-payment"} onChange={(e) => numericUpdate("currentMonthlyPayment", e.target.value)} /></Field>
               <Field label="Number of monthly payments remaining" helper="Use the remaining payment count from your lender, not the original loan term."><TextInput id="current-payments-remaining" type="number" min="0" step="1" value={form.currentPaymentsRemaining || ""} aria-invalid={invalidFieldId === "current-payments-remaining"} onChange={(e) => numericUpdate("currentPaymentsRemaining", e.target.value)} /></Field>
+            </div>
+            <div className="mt-8 rounded-2xl border border-line bg-wash p-5 sm:p-6">
+              <h3 className="text-lg font-bold text-ink-950">About what is the car worth today?</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-700">A rough estimate is enough. You do not need to leave this page or use a valuation site to continue.</p>
+              <div className="mt-5">
+                <RadioGroup
+                  label="Choose the easiest way to answer"
+                  name="currentValueStatus"
+                  options={[
+                    { label: "Enter a ballpark", value: "amount" },
+                    { label: "Choose a range", value: "range" },
+                    { label: "I don’t know", value: "unknown" }
+                  ]}
+                  value={form.currentValueStatus ?? (form.currentValue > 0 ? "amount" : "unknown")}
+                  onChange={(value) => {
+                    const status = value as VehicleValueStatus;
+                    update("currentValueStatus", status);
+                    if (status === "unknown") {
+                      update("currentValue", 0);
+                      update("currentValueRange", undefined);
+                      trackEvent(analyticsEvents.vehicleValueUnknownSelected, { step: 1 });
+                    }
+                  }}
+                />
+              </div>
+              {form.currentValueStatus === "amount" ? (
+                <div className="motion-feedback mt-5 max-w-sm">
+                  <Field label="Ballpark current value" helper="Think about what it might sell or trade for today, not what you originally paid.">
+                    <TextInput id="current-value" type="number" min="0" value={form.currentValue || ""} aria-invalid={invalidFieldId === "current-value"} onChange={(e) => numericUpdate("currentValue", e.target.value)} />
+                  </Field>
+                </div>
+              ) : null}
+              {form.currentValueStatus === "range" ? (
+                <div className="motion-feedback mt-5 max-w-sm">
+                  <Field label="Current value range" helper="We use the midpoint as a clearly labeled planning assumption.">
+                    <Select
+                      id="current-value-range"
+                      value={form.currentValueRange ?? ""}
+                      onChange={(event) => {
+                        const range = event.target.value as VehicleValueRange;
+                        update("currentValueRange", range);
+                        update("currentValue", vehicleValueRanges[range].assumedValue);
+                      }}
+                    >
+                      <option value="" disabled>Choose a range</option>
+                      {Object.entries(vehicleValueRanges).map(([value, range]) => <option key={value} value={value}>{range.label}</option>)}
+                    </Select>
+                  </Field>
+                </div>
+              ) : null}
+              {form.currentValueStatus === "unknown" ? <p className="mt-5 rounded-xl bg-white p-4 text-sm leading-6 text-ink-700">You can still compare the three paths. The result will be marked “Limited information” because current equity and repair-to-value effects cannot be fully evaluated.</p> : null}
             </div>
             <div className="mt-6">
               <RadioGroup label="Is the vehicle currently safe to drive?" name="safeToDrive" options={threeWayOptions} value={form.safeToDrive} onChange={(value) => update("safeToDrive", value as ThreeWay)} />
@@ -243,8 +316,8 @@ export function CalculatorForm() {
         ) : null}
 
         {step === 2 ? (
-          <section aria-labelledby="repair-heading">
-            <h2 id="repair-heading" {...headingProps}><span className="sr-only">Step 2 of 3: </span>Your repair estimate</h2>
+          <section aria-labelledby="repair-heading" className="motion-step">
+            <h2 id="repair-heading" {...headingProps}><span className="sr-only">Step 2 of 4: </span>Your repair evidence</h2>
             <p className="mt-2 max-w-2xl leading-7 text-ink-700">Enter the written or verbal estimate provided by the repair shop. This tool does not estimate the repair price.</p>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Repair category"><Select value={form.repairCategory} onChange={(e) => update("repairCategory", e.target.value)}>{repairCategories.map((category) => <option key={category}>{category}</option>)}</Select></Field>
@@ -253,7 +326,7 @@ export function CalculatorForm() {
             </div>
 
             <div className="mt-8 rounded-lg border border-line bg-wash p-5">
-              <h3 className="text-lg font-bold text-ink-950">A quick confidence check</h3>
+              <h3 className="text-lg font-bold text-ink-950">How well supported is the estimate?</h3>
               <p className="mt-2 text-sm leading-6 text-ink-700">Optional. These answers tailor what to verify next. They do not change the repair amount or decide whether the shop is right.</p>
               <div className="mt-5 grid gap-6">
                 <RadioGroup label="Did the shop provide an itemized estimate?" name="itemizedEstimate" options={threeWayOptions} value={form.itemizedEstimate ?? ""} onChange={(value) => update("itemizedEstimate", value as ThreeWay)} />
@@ -273,15 +346,14 @@ export function CalculatorForm() {
         ) : null}
 
         {step === 3 ? (
-          <section aria-labelledby="replacement-heading">
-            <h2 id="replacement-heading" {...headingProps}><span className="sr-only">Step 3 of 3: </span>Replacement costs</h2>
-            <p className="mt-2 max-w-2xl leading-7 text-ink-700">Use a realistic vehicle price and financing terms you could actually obtain.</p>
+          <section aria-labelledby="replacement-heading" className="motion-step">
+            <h2 id="replacement-heading" {...headingProps}><span className="sr-only">Step 3 of 4: </span>Replacement assumptions</h2>
+            <p className="mt-2 max-w-2xl leading-7 text-ink-700">Add a realistic used and new alternative. You will see all three paths in the result.</p>
             <div className="mt-5"><Alert tone="info">This site does not look up market values, financing offers, insurance quotes, or local taxes.</Alert></div>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <Field label="Replacement comparison preference"><Select value={form.replacementPreference} onChange={(e) => update("replacementPreference", e.target.value as CalculatorInput["replacementPreference"])}><option value="used">Used vehicle</option><option value="new">New vehicle</option><option value="both">Compare both</option></Select></Field>
               <Field label="Comparison period"><Select value={form.comparisonMonths} onChange={(e) => update("comparisonMonths", numberValue(e.target.value) as 12 | 24 | 36)}><option value={12}>12 months</option><option value={24}>24 months</option><option value={36}>36 months</option></Select></Field>
-              {form.replacementPreference !== "new" ? <Field label="Used replacement purchase price"><TextInput id="used-price" type="number" min="0" value={form.usedPurchasePrice || ""} aria-invalid={invalidFieldId === "used-price"} onChange={(e) => numericUpdate("usedPurchasePrice", e.target.value)} /></Field> : null}
-              {form.replacementPreference !== "used" ? <Field label="New replacement purchase price"><TextInput id="new-price" type="number" min="0" value={form.newPurchasePrice || ""} aria-invalid={invalidFieldId === "new-price"} onChange={(e) => numericUpdate("newPurchasePrice", e.target.value)} /></Field> : null}
+              <Field label="Used replacement purchase price"><TextInput id="used-price" type="number" min="0" value={form.usedPurchasePrice || ""} aria-invalid={invalidFieldId === "used-price"} onChange={(e) => numericUpdate("usedPurchasePrice", e.target.value)} /></Field>
+              <Field label="New replacement purchase price"><TextInput id="new-price" type="number" min="0" value={form.newPurchasePrice || ""} aria-invalid={invalidFieldId === "new-price"} onChange={(e) => numericUpdate("newPurchasePrice", e.target.value)} /></Field>
               <Field label="Down payment"><TextInput type="number" min="0" value={form.downPayment || ""} onChange={(e) => numericUpdate("downPayment", e.target.value)} /></Field>
               <Field label="Estimated APR"><TextInput type="number" min="0" step="0.1" value={form.apr || ""} onChange={(e) => numericUpdate("apr", e.target.value)} /></Field>
               <Field label="Loan term in months"><TextInput id="loan-term" type="number" min="1" value={form.loanTermMonths || ""} aria-invalid={invalidFieldId === "loan-term"} onChange={(e) => numericUpdate("loanTermMonths", e.target.value, 1)} /></Field>
@@ -291,20 +363,50 @@ export function CalculatorForm() {
               <Field label="Estimated sales tax, registration, and dealer-fee total" helper="Counted as upfront cash, not added to the financed amount."><TextInput type="number" min="0" value={form.taxesAndFees || ""} onChange={(e) => numericUpdate("taxesAndFees", e.target.value)} /></Field>
               <Field label="ZIP code for optional search links" helper="Optional. Used only to create outbound search links."><TextInput inputMode="numeric" maxLength={10} value={form.zipCode} onChange={(e) => update("zipCode", e.target.value)} /></Field>
             </div>
-            <details className="mt-6 rounded-lg border border-line bg-wash p-5">
+            <details className="motion-details mt-6 rounded-lg border border-line bg-wash p-5">
               <summary className="cursor-pointer font-semibold text-ink-950">Advanced assumptions</summary>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-700">Optional ending-value estimates let us show depreciation and end-of-period equity separately. They do not change the cash-flow total.</p>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {form.replacementPreference !== "new" ? <Field label="Estimated vehicle value at the end of the comparison period" helper="Used replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" aria-label="Used replacement estimated vehicle value at the end of the comparison period" value={form.usedEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("usedEndingValue", e.target.value)} /></Field> : null}
-                {form.replacementPreference !== "used" ? <Field label="Estimated vehicle value at the end of the comparison period" helper="New replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" aria-label="New replacement estimated vehicle value at the end of the comparison period" value={form.newEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("newEndingValue", e.target.value)} /></Field> : null}
+                <Field label="Estimated vehicle value at the end of the comparison period" helper="Used replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" aria-label="Used replacement estimated vehicle value at the end of the comparison period" value={form.usedEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("usedEndingValue", e.target.value)} /></Field>
+                <Field label="Estimated vehicle value at the end of the comparison period" helper="New replacement. Leave blank if you do not have a supportable estimate."><TextInput type="number" min="0" aria-label="New replacement estimated vehicle value at the end of the comparison period" value={form.newEndingValue ?? ""} onChange={(e) => optionalNumericUpdate("newEndingValue", e.target.value)} /></Field>
               </div>
             </details>
           </section>
         ) : null}
 
+        {step === 4 ? (
+          <section aria-labelledby="review-heading" className="motion-step">
+            <h2 id="review-heading" {...headingProps}><span className="sr-only">Step 4 of 4: </span>Review the assumptions that matter most</h2>
+            <p className="mt-2 max-w-2xl leading-7 text-ink-700">Nothing is submitted to a dealer, lender, or repair shop. Check the planning numbers below before comparing the three paths.</p>
+            {form.currentValueStatus === "unknown" ? <div className="mt-6"><Alert tone="warning"><p className="font-semibold">Current vehicle value is unknown</p><p className="mt-1">We will show a provisional comparison without positive sale or trade-in value and explain how this limits the result.</p></Alert></div> : null}
+            <dl className="mt-8 divide-y divide-line rounded-2xl border border-line bg-white">
+              {[
+                ["Current vehicle", `${form.vehicleYear} ${form.make || ""} ${form.model || ""}`.trim()],
+                ["Current value", form.currentValueStatus === "unknown" ? "Unknown" : form.currentValueStatus === "range" && form.currentValueRange ? `${vehicleValueRanges[form.currentValueRange].label} (uses ${money.format(form.currentValue)})` : money.format(form.currentValue)],
+                ["Repair estimate", money.format(form.repairQuote)],
+                ["Used replacement", money.format(form.usedPurchasePrice)],
+                ["New replacement", money.format(form.newPurchasePrice)],
+                ["Financing", `${form.apr}% APR · ${form.loanTermMonths} months · ${money.format(form.downPayment)} down`],
+                ["Comparison period", `${form.comparisonMonths} months`],
+                ["Methodology", `v${methodologyVersion}`]
+              ].map(([label, value]) => (
+                <div key={label} className="grid gap-1 px-4 py-4 sm:grid-cols-[13rem_1fr] sm:px-5">
+                  <dt className="text-sm font-semibold text-ink-600">{label}</dt>
+                  <dd className="tabular font-semibold text-ink-950">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold">
+              <button type="button" className="min-h-11 rounded-lg px-3 text-brand-700 underline underline-offset-4" onClick={() => moveToStep(1, "back")}>Edit current situation</button>
+              <button type="button" className="min-h-11 rounded-lg px-3 text-brand-700 underline underline-offset-4" onClick={() => moveToStep(2, "back")}>Edit repair evidence</button>
+              <button type="button" className="min-h-11 rounded-lg px-3 text-brand-700 underline underline-offset-4" onClick={() => moveToStep(3, "back")}>Edit replacement assumptions</button>
+            </div>
+          </section>
+        ) : null}
+
         <div className="mt-8 flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:justify-between">
           {step > 1 ? <Button type="button" variant="secondary" onClick={() => moveToStep(step - 1, "back")}>Back</Button> : <span aria-hidden="true" className="hidden sm:block" />}
-          {step < 3 ? <Button type="button" onClick={() => moveToStep(step + 1, "forward")}>Continue</Button> : <Button type="button" onClick={submit}>See my results</Button>}
+          {step < 4 ? <Button type="button" onClick={() => moveToStep(step + 1, "forward")}>{step === 3 ? "Review assumptions" : "Continue"}</Button> : <Button type="button" onClick={submit}>Compare the three paths</Button>}
         </div>
       </div>
     </Card>

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { ChecklistSignup } from "@/components/ChecklistSignup";
+import { PartnerOffer } from "@/components/PartnerOffer";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { CostChart } from "@/components/CostChart";
 import { EstimateDisclaimer, safetyWarningText } from "@/components/EstimateDisclaimer";
@@ -12,15 +13,17 @@ import { Card } from "@/components/ui/Card";
 import { ResultBadge } from "@/components/ui/ResultBadge";
 import { analyticsEvents, trackEvent } from "@/lib/analytics";
 import { calculateRepairOrReplace, type CalculatorInput } from "@/lib/calculator";
-import { calculatorAssumptions } from "@/lib/calculator-constants";
+import { calculatorAssumptions, methodologyVersion } from "@/lib/calculator-constants";
 import { parseStoredCalculatorInput } from "@/lib/storage";
 
 const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
-function loadStoredInput() {
-  if (typeof window === "undefined") return null;
+function subscribeToStoredInput() {
+  return () => undefined;
+}
 
-  return parseStoredCalculatorInput(window.localStorage.getItem("repair-or-replace-input"));
+function getStoredInputValue() {
+  return window.localStorage.getItem("repair-or-replace-input");
 }
 
 function buildSearchUrl(engine: "google" | "yelp", input: CalculatorInput) {
@@ -36,7 +39,8 @@ function buildEmailResultsHref(input: CalculatorInput, result: ReturnType<typeof
     result.headline,
     result.summary,
     "",
-    `Confidence: ${result.confidence}`,
+    `Result stability: ${stabilityLabel(result.resultStability)}`,
+    `Methodology: v${methodologyVersion}`,
     `Comparison period: ${input.comparisonMonths} months`,
     `Lowest estimated cash flow: ${result.lowestOption.label}`,
     "",
@@ -55,6 +59,14 @@ function buildEmailResultsHref(input: CalculatorInput, result: ReturnType<typeof
   return `mailto:?subject=${encodeURIComponent("My Car Second Opinion results")}&body=${encodeURIComponent(lines.join("\n"))}`;
 }
 
+function stabilityLabel(stability: ReturnType<typeof calculateRepairOrReplace>["resultStability"]) {
+  return {
+    more_stable: "More stable",
+    sensitive: "Sensitive",
+    limited_information: "Limited information"
+  }[stability];
+}
+
 function outcomeNextStep(result: ReturnType<typeof calculateRepairOrReplace>, input: CalculatorInput) {
   if (result.outcome === "safety") {
     return {
@@ -68,6 +80,19 @@ function outcomeNextStep(result: ReturnType<typeof calculateRepairOrReplace>, in
       secondaryLabel: "Review the safety disclaimer",
       secondaryHref: "/disclaimer",
       trackingContext: "safety_professional"
+    };
+  }
+
+  if (!result.vehicleValueKnown) {
+    return {
+      title: "Add a ballpark vehicle value",
+      copy:
+        "The current value affects both repair-to-value context and the equity available for a replacement. A rough number or broad range is enough to make this comparison more useful.",
+      primaryLabel: "Add a ballpark value",
+      primaryHref: "/calculator?edit=vehicle",
+      secondaryLabel: "Keep reviewing the provisional result",
+      secondaryHref: "#comparison-details",
+      trackingContext: "vehicle_value"
     };
   }
 
@@ -137,7 +162,9 @@ const shopQuestions = [
 ];
 
 export function ResultsClient() {
-  const [input] = useState<CalculatorInput | null>(() => loadStoredInput());
+  const storedInputValue = useSyncExternalStore(subscribeToStoredInput, getStoredInputValue, () => null);
+  const input = useMemo(() => parseStoredCalculatorInput(storedInputValue), [storedInputValue]);
+  const [copyStatus, setCopyStatus] = useState("");
 
   const result = useMemo(() => (input ? calculateRepairOrReplace(input) : null), [input]);
 
@@ -151,8 +178,14 @@ export function ResultsClient() {
         : result.outcome === "replace"
           ? analyticsEvents.resultReplace
           : analyticsEvents.resultCloseCall;
-    trackEvent(event, { confidence: result.confidence });
-  }, [result]);
+    trackEvent(event, { result_stability: result.resultStability, methodology_version: methodologyVersion });
+    trackEvent(analyticsEvents.resultViewed, {
+      outcome: result.outcome,
+      result_stability: result.resultStability,
+      comparison_months: input?.comparisonMonths ?? 0,
+      methodology_version: methodologyVersion
+    });
+  }, [input?.comparisonMonths, result]);
 
   if (!input || !result) {
     return (
@@ -181,8 +214,48 @@ export function ResultsClient() {
     (option) => option.key !== "repair" && option.endingVehicleValue === undefined
   );
   const currentEquityDescription = result.equity >= 0
-    ? `Positive equity of ${formatter.format(result.equity)}`
+    ? result.vehicleValueKnown ? `Positive equity of ${formatter.format(result.equity)}` : "Not available without a vehicle value"
     : `Negative equity of ${formatter.format(Math.abs(result.equity))}`;
+
+  const portableSummary = [
+    "Car Second Opinion",
+    `Calculated ${new Intl.DateTimeFormat("en-US", { dateStyle: "long" }).format(new Date())}`,
+    `Methodology v${methodologyVersion} · ${input.comparisonMonths}-month comparison`,
+    "",
+    result.headline,
+    result.summary,
+    `Result stability: ${stabilityLabel(result.resultStability)}`,
+    ...result.stabilityReasons.map((reason) => `- ${reason}`),
+    "",
+    "Estimated cash paid during the comparison period:",
+    ...result.options.map((option) => `- ${option.label}: ${formatter.format(option.totalCost)}`),
+    "",
+    `Next step: ${nextStep.title}`,
+    nextStep.copy,
+    "",
+    "Educational estimate only. Review the assumptions and consult qualified professionals for mechanical, safety, financial, insurance, legal, or purchasing decisions.",
+    "https://carsecondopinion.com/methodology"
+  ].join("\n");
+  const portableOutcome = result.outcome;
+  const portableStability = result.resultStability;
+
+  async function copySummary() {
+    try {
+      await navigator.clipboard.writeText(portableSummary);
+      setCopyStatus("Summary copied");
+      trackEvent(analyticsEvents.resultSummaryCopied, { outcome: portableOutcome, methodology_version: methodologyVersion });
+      trackEvent(analyticsEvents.informedNextStepSelected, { step_type: "copy_plan", outcome: portableOutcome, result_stability: portableStability, commercial: false, methodology_version: methodologyVersion });
+    } catch {
+      setCopyStatus("Could not copy automatically. Use print or email instead.");
+    }
+  }
+
+  function clearSavedResult() {
+    if (!window.confirm("Clear the calculator inputs and result saved on this device?")) return;
+    window.localStorage.removeItem("repair-or-replace-input");
+    trackEvent(analyticsEvents.savedResultCleared, { methodology_version: methodologyVersion });
+    window.location.assign("/calculator");
+  }
 
   return (
     <div className="space-y-8">
@@ -206,32 +279,36 @@ export function ResultsClient() {
         </Alert>
       ) : null}
 
-      <Card className="p-6 sm:p-8">
-        <ResultBadge outcome={result.outcome} />
-        <p className="mt-5 text-sm font-semibold text-brand-700">Our financial perspective</p>
-        <h1 className="mt-2 text-2xl font-bold leading-tight text-ink-950 sm:text-3xl md:text-5xl">{result.headline}</h1>
-        <p className="mt-4 max-w-3xl font-semibold leading-7 text-ink-800">Based on the information you entered:</p>
-        <p className="mt-4 max-w-3xl text-base leading-7 text-ink-700 sm:text-lg sm:leading-8">{result.summary}</p>
-        <div className="mt-5">
-          <EstimateDisclaimer />
+      <Card className="overflow-hidden shadow-soft">
+        <div className="p-6 sm:p-8">
+          <ResultBadge outcome={result.outcome} />
+          <p className="mt-5 text-sm font-semibold text-brand-700">Our financial perspective</p>
+          <h1 className="mt-2 max-w-4xl text-3xl font-bold leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-4xl md:text-5xl">{result.headline}</h1>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-ink-700 sm:text-lg sm:leading-8">{result.summary}</p>
+          <div className="mt-7 grid gap-4 sm:grid-cols-3">
+            <div className={`rounded-xl p-4 ${result.resultStability === "more_stable" ? "bg-success-50" : "bg-caution-50"}`}>
+              <p className="text-sm font-semibold text-ink-600">How stable is this result?</p>
+              <p className="mt-1 text-2xl font-bold text-ink-950">{stabilityLabel(result.resultStability)}</p>
+            </div>
+            <div className="rounded-xl bg-wash p-4">
+              <p className="text-sm font-semibold text-ink-600">Comparison period</p>
+              <p className="mt-1 tabular text-2xl font-bold text-ink-950">{input.comparisonMonths} months</p>
+            </div>
+            <div className="rounded-xl bg-wash p-4">
+              <p className="text-sm font-semibold text-ink-600">Lowest estimated cash flow</p>
+              <p className="mt-1 text-2xl font-bold text-ink-950">{result.lowestOption.label}</p>
+            </div>
+          </div>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <div>
-            <p className="text-sm font-semibold text-ink-600">Confidence</p>
-            <p className="mt-1 text-2xl font-bold text-ink-950">{result.confidence}</p>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-ink-600">Comparison period</p>
-            <p className="mt-1 tabular text-2xl font-bold text-ink-950">{input.comparisonMonths} months</p>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-ink-600">Lowest estimated cash flow</p>
-            <p className="mt-1 text-2xl font-bold text-ink-950">{result.lowestOption.label}</p>
-          </div>
+        <div className={`border-t px-6 py-5 sm:px-8 ${result.resultStability === "more_stable" ? "border-success-700/20 bg-success-50" : "border-caution-700/20 bg-caution-50"}`}>
+          <p className="font-bold text-ink-950">What that means</p>
+          <ul className="mt-2 space-y-1 text-sm leading-6 text-ink-700">
+            {result.stabilityReasons.map((reason) => <li key={reason}>{reason}</li>)}
+          </ul>
         </div>
       </Card>
 
-      <section aria-labelledby="cost-heading" className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+      <section id="comparison-details" aria-labelledby="cost-heading" className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="p-6">
           <h2 id="cost-heading" className="text-2xl font-bold text-ink-950">Estimated cash-flow comparison</h2>
           <p className="mt-2 text-sm leading-6 text-ink-600">Compares estimated cash paid during the selected period. It is not a complete ownership-cost calculation.</p>
@@ -389,6 +466,7 @@ export function ResultsClient() {
                 trackEvent(analyticsEvents.resultNextStepClicked, { outcome: result.outcome, step: nextStep.trackingContext });
                 trackEvent(analyticsEvents.nextStepClicked, { outcome: result.outcome, step: nextStep.trackingContext });
                 trackEvent(nextStep.primaryEvent ?? analyticsEvents.resultNextStepClicked, { outcome: result.outcome });
+                trackEvent(analyticsEvents.informedNextStepSelected, { step_type: nextStep.trackingContext, outcome: result.outcome, result_stability: result.resultStability, commercial: false, methodology_version: methodologyVersion });
               }}
             >
               {nextStep.primaryLabel}
@@ -400,6 +478,7 @@ export function ResultsClient() {
               onClick={() => {
                 trackEvent(analyticsEvents.resultNextStepClicked, { outcome: result.outcome, step: nextStep.trackingContext });
                 trackEvent(analyticsEvents.nextStepClicked, { outcome: result.outcome, step: nextStep.trackingContext });
+                trackEvent(analyticsEvents.informedNextStepSelected, { step_type: nextStep.trackingContext, outcome: result.outcome, result_stability: result.resultStability, commercial: false, methodology_version: methodologyVersion });
               }}
             >
               {nextStep.primaryLabel}
@@ -433,6 +512,8 @@ export function ResultsClient() {
         </div>
       </Card>
 
+      <PartnerOffer outcome={result.outcome} safetyFlag={result.safetyFlag} />
+
       <details
         className="rounded-lg border border-line bg-white p-6"
         onToggle={(event) => {
@@ -451,8 +532,8 @@ export function ResultsClient() {
       <section className="rounded-lg border border-line bg-white p-6">
         <h2 className="text-2xl font-bold text-ink-950">Optional next steps</h2>
         <p className="mt-3 text-sm leading-6 text-ink-600">
-          External links may take you to third-party services. These are not paid placements or affiliate links right
-          now. Ratings, availability, pricing, licensing, insurance, and service quality can change. We do not guarantee
+          The search and information links below are not paid placements. Any affiliate option is labeled separately
+          above. Ratings, availability, pricing, licensing, insurance, and service quality can change. We do not guarantee
           third-party services or outcomes.
         </p>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -479,16 +560,38 @@ export function ResultsClient() {
         </div>
       </section>
 
-      <div className="no-print flex flex-col gap-3 sm:flex-row">
-        <Button href="/calculator" variant="secondary">Start Over</Button>
-        <a
-          className="inline-flex min-h-11 items-center justify-center rounded-md border border-brand-600 bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          href={buildEmailResultsHref(input, result)}
-          onClick={() => trackEvent(analyticsEvents.emailResultsClicked, { outcome: result.outcome, confidence: result.confidence })}
+      <div className="no-print flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <Button href="/calculator" variant="secondary">Edit assumptions</Button>
+        <button
+          type="button"
+          className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-strong bg-white px-5 py-2.5 font-semibold text-ink-950 hover:bg-brand-50"
+          onClick={() => {
+            window.print();
+            trackEvent(analyticsEvents.printResultsClicked, { outcome: result.outcome, methodology_version: methodologyVersion });
+            trackEvent(analyticsEvents.informedNextStepSelected, { step_type: "print_plan", outcome: result.outcome, result_stability: result.resultStability, commercial: false, methodology_version: methodologyVersion });
+          }}
         >
-          Email My Results
+          Print or save as PDF
+        </button>
+        <button type="button" className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-strong bg-white px-5 py-2.5 font-semibold text-ink-950 hover:bg-brand-50" onClick={copySummary}>
+          Copy summary
+        </button>
+        <a
+          className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-brand-600 bg-brand-600 px-5 py-2.5 font-semibold text-white transition-colors hover:bg-brand-700"
+          href={buildEmailResultsHref(input, result)}
+          onClick={() => {
+            trackEvent(analyticsEvents.emailResultsClicked, { outcome: result.outcome, result_stability: result.resultStability, methodology_version: methodologyVersion });
+            trackEvent(analyticsEvents.informedNextStepSelected, { step_type: "email_plan", outcome: result.outcome, result_stability: result.resultStability, commercial: false, methodology_version: methodologyVersion });
+          }}
+        >
+          Email summary
         </a>
+        <button type="button" className="inline-flex min-h-12 items-center justify-center rounded-[10px] px-4 py-2.5 font-semibold text-danger-700 underline underline-offset-4" onClick={clearSavedResult}>
+          Clear saved comparison
+        </button>
       </div>
+      {copyStatus ? <p className="no-print text-sm font-semibold text-ink-700" role="status">{copyStatus}</p> : null}
+      <p className="print-only text-sm">Calculated {new Intl.DateTimeFormat("en-US", { dateStyle: "long" }).format(new Date())} · Methodology v{methodologyVersion} · {input.comparisonMonths}-month comparison</p>
     </div>
   );
 }

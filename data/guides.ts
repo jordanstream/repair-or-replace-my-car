@@ -1,3 +1,6 @@
+import { repairTypeGuides } from "./guides-repair-types-2026";
+import { septemberGuides } from "./guides-september-2026";
+
 export type GuideCategory =
   | "Repair cost decisions"
   | "Major repair types"
@@ -24,6 +27,20 @@ export type Guide = {
   nextSteps: string[];
   faqs: { question: string; answer: string }[];
   related: string[];
+  sectionLabels?: {
+    repairMakesSense?: string;
+    replaceMakesSense?: string;
+    numbersToCompare?: string;
+    safetyFactors?: string;
+    example?: string;
+    nextSteps?: string;
+  };
+  nextStepIntro?: string;
+  sources?: {
+    label: string;
+    url: string;
+    note: string;
+  }[];
 };
 
 export const guideCategories: GuideCategory[] = [
@@ -35,18 +52,21 @@ export const guideCategories: GuideCategory[] = [
 
 const publishedDate = "2026-07-14";
 const lastReviewedDate = "2026-07-14";
+const seoReviewDate = "2026-07-22";
 
 export const guides: Guide[] = [
+  ...repairTypeGuides,
+  ...septemberGuides,
   {
     slug: "is-a-3000-dollar-car-repair-worth-it",
     title: "Is a $3,000 Car Repair Worth It?",
-    seoTitle: "Is a $3,000 Car Repair Worth It? Repair or Replace Guide",
+    seoTitle: "Is a $3,000 Car Repair Worth It?",
     description:
-      "A $3,000 car repair may be worth it if the car is reliable, paid off, and likely to last. Compare repair cost, car value, replacement cost, and safety before deciding.",
+      "Compare a $3,000 repair with your car's value, reliability, safety, expected repairs, and the full cost of buying another car.",
     targetQuery: "is a $3,000 car repair worth it",
     category: "Repair cost decisions",
     publishedDate,
-    lastReviewedDate,
+    lastReviewedDate: seoReviewDate,
     directAnswer:
       "A $3,000 car repair may be worth it if the car is otherwise reliable, the repair solves the main problem, and replacing the vehicle would cost much more over the next 12 to 36 months. It may be harder to justify if the car has very high mileage, safety concerns, repeated repairs, or a low market value.",
     intro: [
@@ -116,7 +136,10 @@ export const guides: Guide[] = [
     related: [
       "is-a-5000-dollar-car-repair-worth-it",
       "should-i-fix-my-old-car-or-buy-another-one",
-      "should-i-repair-a-paid-off-car"
+      "is-transmission-replacement-worth-it",
+      "is-a-hybrid-battery-replacement-worth-it",
+      "should-i-repair-a-paid-off-car",
+      "repair-costs-more-than-car-value"
     ]
   },
   {
@@ -199,19 +222,20 @@ export const guides: Guide[] = [
       "is-a-3000-dollar-car-repair-worth-it",
       "is-transmission-replacement-worth-it",
       "is-engine-replacement-worth-it",
-      "should-i-sell-my-car-instead-of-fixing-it"
+      "should-i-sell-my-car-instead-of-fixing-it",
+      "repair-costs-more-than-car-value"
     ]
   },
   {
     slug: "should-i-fix-my-old-car-or-buy-another-one",
-    title: "Should I Fix My Old Car or Buy Another One?",
-    seoTitle: "Should I Fix My Old Car or Buy Another One?",
+    title: "Fix My Old Car or Buy Another One?",
+    seoTitle: "Fix My Old Car or Buy Another One?",
     description:
-      "Deciding whether to fix an old car or buy another one depends on repair cost, reliability, safety, car value, loan balance, and replacement costs.",
+      "Compare fixing your old car with buying another one, including the repair quote, reliability, safety, loan balance, and replacement costs.",
     targetQuery: "should I fix my old car or buy another one",
     category: "Mileage and ownership situation",
     publishedDate,
-    lastReviewedDate,
+    lastReviewedDate: seoReviewDate,
     directAnswer:
       "Fixing an old car may make sense if the repair is affordable, the vehicle is safe, and the repair is likely to keep it usable. Buying another car may make more sense if repairs are becoming frequent, reliability is affecting work or family life, or the replacement cost is reasonable compared with expected future repairs.",
     intro: [
@@ -279,21 +303,25 @@ export const guides: Guide[] = [
       }
     ],
     related: [
+      "used-car-inspection-before-replacing-your-car",
+      "is-a-3000-dollar-car-repair-worth-it",
+      "is-transmission-replacement-worth-it",
+      "is-a-hybrid-battery-replacement-worth-it",
+      "is-engine-replacement-worth-it",
       "is-it-worth-fixing-a-car-with-200000-miles",
-      "should-i-repair-a-paid-off-car",
-      "should-i-sell-my-car-instead-of-fixing-it"
+      "is-my-car-a-money-pit",
     ]
   },
   {
     slug: "is-transmission-replacement-worth-it",
-    title: "Is Transmission Replacement Worth It?",
-    seoTitle: "Is Transmission Replacement Worth It? Repair or Replace Guide",
+    title: "Is Replacing a Transmission Worth It?",
+    seoTitle: "Is Replacing a Transmission Worth It?",
     description:
-      "Transmission replacement can be worth it if the car is otherwise reliable, but it depends on vehicle value, mileage, safety, and replacement costs.",
-    targetQuery: "is transmission replacement worth it",
+      "See when replacing a transmission may be worth it by comparing the quote, warranty, mileage, vehicle condition, safety, and replacement costs.",
+    targetQuery: "is it worth replacing a transmission",
     category: "Major repair types",
     publishedDate,
-    lastReviewedDate,
+    lastReviewedDate: seoReviewDate,
     directAnswer:
       "Transmission replacement may be worth it if the vehicle is otherwise in good shape, the repair comes with a clear written estimate, and the total cost is lower than replacing the car. It may be harder to justify if the car has high mileage, other major issues, or a low value compared with the repair bill.",
     intro: [
@@ -361,6 +389,7 @@ export const guides: Guide[] = [
       }
     ],
     related: [
+      "used-vs-rebuilt-vs-remanufactured-transmission",
       "is-a-5000-dollar-car-repair-worth-it",
       "should-i-fix-my-old-car-or-buy-another-one",
       "is-it-worth-getting-a-second-opinion-on-a-car-repair"
@@ -443,6 +472,9 @@ export const guides: Guide[] = [
       }
     ],
     related: [
+      "is-head-gasket-repair-worth-it",
+      "is-timing-chain-replacement-worth-it",
+      "does-engine-replacement-increase-car-value",
       "is-a-5000-dollar-car-repair-worth-it",
       "should-i-repair-a-car-i-still-owe-money-on",
       "should-i-sell-my-car-instead-of-fixing-it"
@@ -450,14 +482,14 @@ export const guides: Guide[] = [
   },
   {
     slug: "is-a-hybrid-battery-replacement-worth-it",
-    title: "Is Hybrid Battery Replacement Worth It?",
-    seoTitle: "Is Hybrid Battery Replacement Worth It? Repair or Replace Guide",
+    title: "Is Replacing a Hybrid Battery Worth It?",
+    seoTitle: "Is Replacing a Hybrid Battery Worth It?",
     description:
-      "Hybrid battery replacement may be worth it if the car is reliable and fuel-efficient, but compare the repair cost with vehicle value and replacement options.",
-    targetQuery: "is hybrid battery replacement worth it",
+      "See when replacing a hybrid battery may be worth it by comparing the quote, warranty, vehicle condition, fuel costs, and replacement options.",
+    targetQuery: "is it worth replacing a hybrid battery",
     category: "Major repair types",
     publishedDate,
-    lastReviewedDate,
+    lastReviewedDate: seoReviewDate,
     directAnswer:
       "Hybrid battery replacement may be worth it if the car is otherwise dependable, the battery repair has a clear warranty, and replacing the vehicle would cost significantly more. It may be less attractive if the car has other major repairs coming soon or if the replacement battery's warranty is limited.",
     intro: [
@@ -525,6 +557,7 @@ export const guides: Guide[] = [
       }
     ],
     related: [
+      "new-vs-refurbished-hybrid-battery",
       "is-a-3000-dollar-car-repair-worth-it",
       "is-a-5000-dollar-car-repair-worth-it",
       "should-i-fix-my-old-car-or-buy-another-one"
@@ -609,7 +642,8 @@ export const guides: Guide[] = [
     related: [
       "should-i-fix-my-old-car-or-buy-another-one",
       "is-a-3000-dollar-car-repair-worth-it",
-      "should-i-repair-a-paid-off-car"
+      "should-i-repair-a-paid-off-car",
+      "is-my-car-a-money-pit"
     ]
   },
   {
@@ -689,6 +723,7 @@ export const guides: Guide[] = [
       }
     ],
     related: [
+      "is-it-worth-fixing-ac-in-an-old-car",
       "is-a-3000-dollar-car-repair-worth-it",
       "should-i-fix-my-old-car-or-buy-another-one",
       "should-i-sell-my-car-instead-of-fixing-it"
@@ -1020,7 +1055,532 @@ export const guides: Guide[] = [
       "is-a-3000-dollar-car-repair-worth-it",
       "is-a-5000-dollar-car-repair-worth-it",
       "is-transmission-replacement-worth-it",
+      "is-engine-replacement-worth-it",
+      "how-to-compare-auto-repair-estimates",
+      "check-recalls-and-warranty-before-car-repair"
+    ]
+  },
+  {
+    slug: "repair-costs-more-than-car-value",
+    title: "Repair Costs More Than My Car Is Worth: Should I Fix It?",
+    seoTitle: "Repair Costs More Than Your Car Is Worth? What to Compare",
+    description:
+      "A repair can cost more than a car's market value and still be worth comparing. Use repair-to-value, time-horizon, reliability, and replacement-cost math before deciding.",
+    targetQuery: "repair costs more than car value",
+    category: "Repair cost decisions",
+    publishedDate: seoReviewDate,
+    lastReviewedDate: seoReviewDate,
+    directAnswer:
+      "A repair that costs more than your car's market value is not automatically a bad decision. Market value tells you what the car may sell for today, while the repair decision is about the cost of getting dependable transportation from this point forward. Compare the complete repair path with a realistic replacement over the same 12, 24, or 36 months.",
+    intro: [
+      "Repair-to-value is a useful warning light, not a verdict. A $5,000 repair on a $4,000 car deserves more scrutiny than a $1,000 repair, but walking away from the repair may require a down payment, taxes, registration, financing, higher insurance, and the risk that another used vehicle also needs work.",
+      "Start from today. Money already spent on the car should not decide the next move. What matters now is the confirmed repair, the condition of the rest of the vehicle, how long you need the car to last, and the replacement you could actually afford."
+    ],
+    summary:
+      "Use the car's value as one input, then calculate the cost per expected month of useful transportation. If a $4,800 repair plus $1,200 of likely follow-up work is expected to provide 24 useful months, that repair path is about $250 per month before normal fuel, insurance, and maintenance. Compare that with the same costs for a real replacement option, not only its advertised payment.",
+    repairMakesSense: [
+      "The diagnosis is supported, the work addresses the main failure, and the shop can explain what the repair will not fix.",
+      "A broader inspection does not reveal another major engine, transmission, structural, electrical, rust, brake, steering, or airbag concern.",
+      "The repaired car is reasonably expected to meet your transportation needs for long enough to spread the expense over a useful period.",
+      "The written warranty covers meaningful parts and labor, and you understand who handles a claim if the repair fails.",
+      "A realistic replacement would require substantially more cash, debt, insurance, taxes, fees, or near-term repairs than the repair path."
+    ],
+    replaceMakesSense: [
+      "The quote addresses one failure while several other expensive or safety-related problems remain.",
+      "The diagnosis is uncertain, the repair is exploratory, or the warranty leaves most of the financial risk with you.",
+      "Breakdowns have become frequent enough that missed work, towing, rentals, or caregiving disruptions are a serious household cost.",
+      "The vehicle no longer fits your needs even if the repair succeeds, such as capacity, accessibility, commute, or reliability requirements.",
+      "You found a replacement you could realistically buy whose full 12-to-36-month cost and reliability tradeoff are acceptable."
+    ],
+    numbersToCompare: [
+      "Repair path: the written repair total, diagnostic charges, taxes, towing or rental costs, and other repairs likely during your comparison period.",
+      "Replacement path: down payment, amount financed, APR, loan term, taxes, title, registration, dealer fees, insurance change, and an initial repair reserve for a used vehicle.",
+      "Current position: realistic as-is sale or trade value, loan payoff amount, and resulting equity or negative equity.",
+      "Time horizon: divide each path's comparable cash cost by the same number of months, while keeping normal costs that are similar on both sides separate.",
+      "Decision stress test: rerun the comparison with a shorter repaired-vehicle life and one plausible follow-up repair rather than relying only on the best case."
+    ],
+    safetyFactors: [
+      "Ask the shop whether the car is safe to drive before delaying work, seeking another estimate, or moving it without a tow.",
+      "Do not let low market value become a reason to postpone a brake, steering, tire, airbag, structural, or severe rust concern without qualified guidance.",
+      "A repaired component does not reset the age or condition of the rest of the vehicle.",
+      "Reliability deserves extra weight when the vehicle is essential for work, school, caregiving, disability access, or medical transportation."
+    ],
+    example: [
+      "Suppose an older sedan is worth about $4,000 and needs a $5,000 confirmed repair. The owner expects another $1,000 of tires and maintenance within two years. If the repair succeeds and the car provides 24 useful months, the planned cash outlay is about $6,000, or $250 per month, before costs that both options would share.",
+      "The realistic replacement is a $16,000 used car with $2,000 down and about $14,000 financed. At an illustrative 8% APR for 48 months, the payment is roughly $342. The first 24 months would include about $8,200 of payments plus the down payment, taxes, registration, insurance changes, and a repair reserve. That does not prove repairing is better. It shows why a repair larger than the car's value can still deserve a side-by-side comparison.",
+      "Now change one fact: an inspection finds serious rust and another likely $3,000 drivetrain problem. The repair path is no longer a single $5,000 decision, and replacement becomes more compelling even though it costs more upfront."
+    ],
+    nextSteps: [
+      "Get the diagnosis, included work, excluded work, and warranty in writing.",
+      "Ask for a broader condition check and list likely work as immediate, within 12 months, or routine maintenance.",
+      "Price one replacement you would actually buy, including financing and transaction costs.",
+      "Compare both paths over the same time period, then test what happens if the repaired car lasts less time than hoped."
+    ],
+    faqs: [
+      {
+        question: "Should I follow the 50% rule for car repairs?",
+        answer:
+          "Treat it as a prompt to investigate, not a universal rule. A repair-to-value ratio leaves out replacement cost, financing, insurance, future repairs, safety, and how long the repaired car may remain useful."
+      },
+      {
+        question: "Why repair a car for more than it is worth?",
+        answer:
+          "Because market value and transportation value are different. Repairing may provide dependable transportation for less cash than buying another vehicle, but only if the diagnosis is clear and the rest of the car is sound enough."
+      },
+      {
+        question: "Does a major repair increase my car's value by the amount I spend?",
+        answer:
+          "Usually you should not assume that it will. The repair may restore function without adding the full repair cost to resale value. Base the decision on future use and realistic sale values, not dollar-for-dollar recovery."
+      },
+      {
+        question: "What replacement costs are easy to overlook?",
+        answer:
+          "Taxes, title and registration, dealer fees, financing charges, insurance changes, negative equity, pre-purchase inspection, and an initial maintenance or repair reserve are commonly missed."
+      }
+    ],
+    related: [
+      "is-a-3000-dollar-car-repair-worth-it",
+      "is-a-5000-dollar-car-repair-worth-it",
+      "should-i-fix-my-old-car-or-buy-another-one",
+      "should-i-repair-a-car-i-still-owe-money-on"
+    ],
+    sources: [
+      {
+        label: "Consumer Financial Protection Bureau: How to compare auto loan offers",
+        url: "https://www.consumerfinance.gov/ask-cfpb/how-do-i-compare-auto-loan-offers-what-should-i-look-at-besides-the-monthly-payment-en-753/",
+        note: "Explains why APR, loan length, amount financed, and total cost matter in addition to the monthly payment."
+      },
+      {
+        label: "Federal Trade Commission: Auto Repair Basics",
+        url: "https://consumer.ftc.gov/articles/0211-auto-repair-basics",
+        note: "Consumer guidance on written estimates, diagnostic charges, replacement parts, warranties, and second opinions."
+      }
+    ]
+  },
+  {
+    slug: "how-to-compare-auto-repair-estimates",
+    title: "How to Compare Two Auto Repair Estimates Line by Line",
+    seoTitle: "How to Compare Auto Repair Estimates Line by Line",
+    description:
+      "Compare two car repair estimates by diagnosis, scope, labor, parts, fees, warranty, and urgency so you can tell whether the quotes describe the same repair.",
+    targetQuery: "how to compare auto repair estimates",
+    category: "Sell, trade, or get another opinion",
+    publishedDate: seoReviewDate,
+    lastReviewedDate: seoReviewDate,
+    directAnswer:
+      "Do not compare auto repair estimates by the final price alone. First confirm that both shops diagnosed the same problem and proposed the same scope. Then compare labor hours and rates, part condition and source, related work, fees, warranty coverage, completion time, and what happens if the repair does not solve the symptom.",
+    intro: [
+      "A $3,900 estimate and a $4,900 estimate can describe very different repairs. One may include a used component with a short parts-only warranty. The other may include a remanufactured unit, related fluids, updated parts, and labor coverage. The lower total is not automatically the better comparison.",
+      "Your goal is not to make every line identical. It is to understand why the lines differ and which uncertainty you would be accepting with each option. Ask each shop to put the diagnosis and proposed work in writing before you try to compare prices."
+    ],
+    summary:
+      "Use a seven-part comparison: diagnosis, repair scope, labor, parts, additional charges, warranty, and logistics. If the estimates do not describe the same failed part or repair approach, pause the price comparison and resolve the diagnostic difference first.",
+    repairMakesSense: [
+      "Diagnosis: the symptom, test results, trouble codes, inspection findings, or measurements that support the conclusion.",
+      "Scope: every component and service included, plus related items the shop inspected but did not include.",
+      "Labor: estimated hours, labor rate, diagnostic time, and whether additional authorization is required if the job expands.",
+      "Parts: new, original-equipment, aftermarket, remanufactured, rebuilt, or used; include brand, source, and mileage when relevant.",
+      "Charges: shop supplies, fluids, programming, alignment, disposal, taxes, towing, storage, and diagnostic fees."
+    ],
+    replaceMakesSense: [
+      "Warranty length in both time and mileage, with a clear statement of whether parts, labor, diagnostics, towing, or consequential damage are covered.",
+      "Who honors the warranty if you move, travel, or the original shop closes.",
+      "Expected completion date, parts availability, loaner or rental terms, and storage charges if you decline the work.",
+      "What happens if the original symptom remains, including who pays for further diagnosis or removal and reinstallation.",
+      "Payment schedule, deposit terms, financing cost, and the shop's approval process for work above the written estimate."
+    ],
+    numbersToCompare: [
+      "Write each estimate into the same columns: diagnosis, part, part condition, quantity, labor hours, labor rate, fees, tax, warranty, and total.",
+      "Mark missing information instead of guessing. A blank labor hour, unspecified part, or vague warranty is a question for the shop.",
+      "Separate diagnostic charges from repair charges and ask whether the diagnostic fee is credited if you authorize the work.",
+      "Compare the amount you could lose in a failed-repair scenario, not only the amount due on pickup.",
+      "Ask for revised written estimates after major clarifications so your final comparison matches what each shop will actually perform."
+    ],
+    safetyFactors: [
+      "Ask both shops whether the vehicle is safe to drive while you compare estimates. Use towing or qualified guidance when safety is uncertain.",
+      "If one shop describes the repair as urgent and another does not, ask each to explain the failure risk and evidence, not merely the timeline.",
+      "Do not delay a confirmed brake, steering, tire, structural, airbag, severe leak, overheating, or drivability problem solely to obtain a cheaper quote.",
+      "A diagnostic-only shop or relevant specialist can be useful when the diagnoses conflict, but credentials alone do not replace clear evidence and written scope."
+    ],
+    example: [
+      "Estimate A totals $4,900 for a transmission complaint: $180 diagnosis, a $3,100 remanufactured unit, $1,400 labor, and $220 for fluid and shop charges. It states a three-year or 36,000-mile parts-and-labor warranty.",
+      "Estimate B says “transmission replacement, $3,950.” After questions, the shop explains that it plans to install a used unit of unknown mileage with a 90-day parts-only warranty. Fluid is included, but labor to replace a failed unit would not be covered.",
+      "The estimates are not $950 apart for the same product. They offer different part histories and different financial exposure after failure. A useful comparison would also ask whether both shops performed the same diagnosis, whether programming or related cooling work is included, and what each shop found elsewhere on the vehicle."
+    ],
+    nextSteps: [
+      "Ask each shop for a signed written estimate that identifies the condition, parts, anticipated labor, and approval limit.",
+      "Transfer both estimates into the same comparison columns and circle every unknown.",
+      "Send the unanswered questions back to each shop and request written clarification.",
+      "Compare the clarified repair options with the cost of keeping or replacing the car only after the scopes are understandable."
+    ],
+    faqs: [
+      {
+        question: "Why can two mechanics give very different estimates?",
+        answer:
+          "They may have different diagnoses, labor rates, part types, repair approaches, warranties, or included services. Ask for those differences in writing before assuming one shop is simply more expensive."
+      },
+      {
+        question: "Should a repair estimate show labor hours?",
+        answer:
+          "A useful estimate identifies anticipated labor charges. If hours or the labor rate are missing, ask the shop how the labor total was calculated and what could cause it to change. State requirements vary."
+      },
+      {
+        question: "Is an aftermarket or used part always worse?",
+        answer:
+          "No. Suitability depends on the part, source, condition, application, warranty, and your plans for the vehicle. Ask exactly what will be installed and what protection applies."
+      },
+      {
+        question: "What if the mechanics diagnosed different problems?",
+        answer:
+          "Do not average the prices. Ask what testing supports each diagnosis. A relevant specialist or additional diagnostic work may be worth considering before either repair is authorized."
+      }
+    ],
+    related: [
+      "car-diagnostic-fee-vs-repair-estimate",
+      "is-it-worth-getting-a-second-opinion-on-a-car-repair",
+      "is-a-3000-dollar-car-repair-worth-it",
+      "is-transmission-replacement-worth-it",
       "is-engine-replacement-worth-it"
+    ],
+    sectionLabels: {
+      repairMakesSense: "Compare the repair itself",
+      replaceMakesSense: "Compare your protection and logistics",
+      numbersToCompare: "Build an apples-to-apples worksheet",
+      safetyFactors: "Resolve urgency before price",
+      example: "Example: two transmission estimates",
+      nextSteps: "Turn two quotes into a decision"
+    },
+    nextStepIntro:
+      "The most useful estimate is not necessarily the cheapest or the longest. It is the one you can understand well enough to compare with the alternatives and hold the shop to in writing.",
+    sources: [
+      {
+        label: "Federal Trade Commission: Auto Repair Basics",
+        url: "https://consumer.ftc.gov/articles/0211-auto-repair-basics",
+        note: "Explains written estimates, diagnostic fees, parts classifications, repair orders, warranties, and when a second opinion may help."
+      }
+    ]
+  },
+  {
+    slug: "is-my-car-a-money-pit",
+    title: "Is My Car a Money Pit? How to Evaluate Repeated Repairs",
+    seoTitle: "Is My Car a Money Pit? A 12-Month Repair Test",
+    description:
+      "Use a 12-month repair log, breakdown pattern, upcoming-work list, and cost-per-month comparison to decide whether repeated car repairs are becoming a money pit.",
+    targetQuery: "is my car a money pit",
+    category: "Mileage and ownership situation",
+    publishedDate: seoReviewDate,
+    lastReviewedDate: seoReviewDate,
+    directAnswer:
+      "A car becomes a practical money pit when unexpected repairs, breakdown disruption, and likely upcoming work repeatedly exceed what your household can reasonably tolerate, without providing dependable transportation in return. One expensive repair does not prove the pattern. Review at least 12 months of repair history and separate normal maintenance from recurring failures.",
+    intro: [
+      "The phrase “money pit” often mixes three different frustrations: the car costs money, it breaks without warning, and you no longer trust it. Those problems should be measured separately. Tires, oil, brakes, and scheduled maintenance are ownership costs that another car will also have. Repeated overheating, electrical faults, towing, and unresolved warning lights tell a different story.",
+      "Do not use money already spent as proof that you must keep going or that every past repair was wasted. Past invoices are evidence about the vehicle's pattern. The next decision should depend on expected costs and reliability from today forward."
+    ],
+    summary:
+      "Create a 12-month log with the date, symptom, diagnosis, repair, amount, days unavailable, towing or rental cost, whether the problem returned, and what the shop expects next. A pattern of several unrelated failures, repeated comebacks, and increasing downtime is more concerning than one large repair followed by stable use.",
+    repairMakesSense: [
+      "Most spending was scheduled maintenance or wear items that would be expected on many vehicles, not repeated breakdowns.",
+      "Recent repairs addressed known problems and the same symptoms have not returned.",
+      "A broader inspection shows no cluster of major engine, transmission, structural, electrical, brake, steering, or rust concerns.",
+      "The vehicle's downtime is manageable and it continues to meet your essential transportation needs.",
+      "Expected 12-to-24-month costs remain meaningfully below a realistic replacement path under a conservative scenario."
+    ],
+    replaceMakesSense: [
+      "The car has needed several unplanned repairs in different systems, especially when one failure strands you or causes another.",
+      "The same symptom has returned after repair and no shop can provide a supported path to resolution.",
+      "Towing, rentals, missed work, school, caregiving, or medical trips make the disruption as important as the invoices.",
+      "A condition inspection identifies several major repairs likely within the next year, not merely routine maintenance.",
+      "You cannot tolerate the downside scenario even if keeping the car is less expensive on average."
+    ],
+    numbersToCompare: [
+      "Unexpected repairs: failures and diagnostic work, tracked separately from routine maintenance and wear items.",
+      "Disruption costs: towing, rental cars, rideshare, delivery, missed wages, and days without dependable transportation.",
+      "Comebacks: repairs that did not solve the original symptom or required additional work soon afterward.",
+      "Forward-looking work: items a qualified shop identifies as immediate, likely within 12 months, or monitor-only.",
+      "Replacement reality: total cash and financing cost, insurance change, transaction costs, and repair risk on the replacement you would actually choose."
+    ],
+    safetyFactors: [
+      "A money-pit calculation cannot determine whether the car is safe. Ask a qualified professional about current brake, steering, tire, airbag, structural, rust, overheating, leak, and drivability concerns.",
+      "Do not treat recurring warning lights or intermittent loss of power as mere inconvenience without diagnosis.",
+      "A reliable backup plan may reduce the household impact of a breakdown, but it does not make an unsafe vehicle safe to drive.",
+      "Set a stop condition before the next crisis, such as one more major unplanned repair, a confirmed safety issue, or more downtime than your household can absorb."
+    ],
+    example: [
+      "In 12 months, one driver paid $650 for scheduled maintenance and tires, plus $2,900 across three unexpected incidents: a cooling-system repair, an electrical no-start, and a returning check-engine problem. The car was unavailable for nine days and required two tows. A shop now expects another $1,800 of suspension and leak repairs within a year.",
+      "The useful planning number is not simply $3,550 spent. Routine work should be separated, and past spending cannot be recovered. The decision starts with the unresolved pattern, likely $1,800 ahead, the cost of another breakdown, and what a realistic replacement would cost.",
+      "If the electrical problem is finally resolved, the upcoming work is manageable, and replacement would require unaffordable debt, keeping the car may still be reasonable. If the diagnosis remains uncertain and downtime threatens employment, the same financial comparison may lead the household to pay more for predictability."
+    ],
+    nextSteps: [
+      "Collect 12 months of invoices and make a repair-and-downtime log.",
+      "Mark each item as routine maintenance, wear, unexpected failure, repeated symptom, or safety-related concern.",
+      "Ask a qualified shop for a forward-looking condition list grouped by urgency and expected timing.",
+      "Choose your stop conditions before another breakdown and compare a conservative keep scenario with a realistic replacement."
+    ],
+    faqs: [
+      {
+        question: "How many repairs make a car a money pit?",
+        answer:
+          "There is no universal number. Frequency, severity, repeated symptoms, downtime, likely upcoming work, and your tolerance for disruption matter more than a simple repair count."
+      },
+      {
+        question: "Should maintenance count as repair spending?",
+        answer:
+          "Track it, but label it separately. Oil, tires, brakes, fluids, and scheduled service are normal ownership costs that a replacement will also have, although timing and amounts may differ."
+      },
+      {
+        question: "Should I keep fixing my car because I already spent so much?",
+        answer:
+          "Past spending is useful evidence but cannot be recovered. Base the next decision on expected cost, condition, safety, reliability, and replacement options from today forward."
+      },
+      {
+        question: "What is a good stop condition for an old car?",
+        answer:
+          "Choose one that reflects your situation, such as another major unplanned bill, a confirmed safety or structural concern, repeated failure of the same system, or more downtime than your household can manage."
+      }
+    ],
+    related: [
+      "should-i-fix-my-old-car-or-buy-another-one",
+      "is-it-worth-fixing-a-car-with-200000-miles",
+      "repair-costs-more-than-car-value",
+      "should-i-sell-my-car-instead-of-fixing-it"
+    ],
+    sectionLabels: {
+      repairMakesSense: "Signs the pattern may still be manageable",
+      replaceMakesSense: "Signs the pattern is getting worse",
+      numbersToCompare: "Build a 12-month repair log",
+      safetyFactors: "Set safety and household stop conditions",
+      example: "Example: cost, recurrence, and downtime",
+      nextSteps: "Run your own 12-month test"
+    },
+    nextStepIntro:
+      "A repair log turns a vague sense of frustration into evidence. It also helps a second shop understand what has happened, when it happened, and which symptoms returned.",
+    sources: [
+      {
+        label: "Federal Trade Commission: Auto Repair Basics",
+        url: "https://consumer.ftc.gov/articles/0211-auto-repair-basics",
+        note: "Consumer guidance on maintenance schedules, written estimates, repair records, diagnostic charges, and second opinions."
+      }
+    ]
+  },
+  {
+    slug: "car-needs-multiple-repairs-what-to-fix-first",
+    title: "My Car Needs Multiple Repairs: What Should I Fix First?",
+    seoTitle: "Car Needs Multiple Repairs? What to Fix First",
+    description:
+      "Turn a long car repair estimate into an urgency plan. Separate safety, damage-prevention, reliability, maintenance, and comfort work before deciding what to authorize.",
+    targetQuery: "car needs multiple repairs what should I fix first",
+    category: "Repair cost decisions",
+    publishedDate: seoReviewDate,
+    lastReviewedDate: seoReviewDate,
+    directAnswer:
+      "When a car needs multiple repairs, do not rank the list by price alone. Ask a qualified shop to classify each item by safety, risk of causing additional damage, breakdown risk, legal or inspection requirements, and whether it can be monitored. Then decide whether the essential work creates a sensible repair path or exposes a broader reliability problem.",
+    intro: [
+      "A long inspection report can make a $4,500 estimate look like one all-or-nothing repair. It may actually contain a dangerous condition, a repair that protects another component, routine maintenance, an early seep, and a comfort item. Those categories do not deserve the same timeline.",
+      "The shop, not an online checklist, must assess the specific vehicle. Your job is to get the reasoning and timing in writing, understand which jobs depend on one another, and compare the essential repair plan with the car's overall condition and replacement cost."
+    ],
+    summary:
+      "Ask the shop to sort every line into five groups: safety or stop-driving concern, prevents additional damage, likely breakdown or loss of function, scheduled maintenance, and comfort or cosmetic work. Add a sixth label, monitor, only when the shop can explain what change would make the item urgent.",
+    repairMakesSense: [
+      "Safety first: ask which conditions affect braking, steering, tires, visibility, restraint systems, structure, leaks, overheating, or safe drivability, and whether the car should be driven before repair.",
+      "Prevent added damage: identify work where delay could turn a smaller problem into a larger failure, and ask what evidence supports that risk.",
+      "Protect reliability: identify problems likely to cause a no-start, stall, breakdown, loss of required function, or repeated towing.",
+      "Maintain on schedule: separate manufacturer-recommended service and ordinary wear from unexpected failures so normal ownership costs do not look like one crisis.",
+      "Defer thoughtfully: comfort, cosmetic, and monitor-only items need a trigger, review date, and written explanation rather than indefinite neglect."
+    ],
+    replaceMakesSense: [
+      "Ask which jobs share labor. Doing related work together may reduce duplicated labor, but only if each item is actually needed.",
+      "Ask whether one repair must be completed before another can be diagnosed accurately.",
+      "Request separate subtotals for immediate work, work likely within 90 days, work likely within 12 months, and routine maintenance.",
+      "For every “monitor” item, record the symptom, measurement, mileage, or date that should trigger reinspection.",
+      "If the essential work is only the first part of a multi-system decline, compare the entire likely repair path with replacement rather than authorizing one line at a time."
+    ],
+    numbersToCompare: [
+      "Immediate subtotal: confirmed work needed before the vehicle can be used as intended, based on the shop's safety and failure-risk explanation.",
+      "Near-term subtotal: likely work within your next 90 days and 12 months, with routine maintenance shown separately.",
+      "Bundled versus staged labor: savings from doing related work together compared with the cash-flow benefit of delaying non-urgent work.",
+      "Transportation disruption: towing, rental, rideshare, missed work, and how many separate shop visits each plan requires.",
+      "Exit option: as-is value, loan payoff, and the complete cost of a realistic replacement if the essential repair plan is too risky."
+    ],
+    safetyFactors: [
+      "Only a qualified professional who evaluates the vehicle can tell you whether a specific item is safe to delay.",
+      "Ask the shop to use plain language: what can fail, how likely or urgent it appears, what evidence they observed, and what could happen if you wait.",
+      "If you seek another estimate, first confirm whether driving the car creates additional risk and use towing when advised.",
+      "Keep the written triage list with the vehicle and update it as items are repaired, rechecked, or change in urgency."
+    ],
+    example: [
+      "A shop presents a $4,600 list: $950 for damaged tires, $1,250 for steering play that needs further inspection and repair, $800 for an oil seep, $1,200 for air conditioning, and $400 for scheduled fluids and filters.",
+      "The driver should not assume all $4,600 is due today or that only the cheapest items matter. They ask whether the tire and steering conditions make the car unsafe to drive, whether the oil seep is actively losing oil or can be measured and rechecked, and whether delaying the air conditioning affects health or safe window defogging in their climate.",
+      "The revised written plan may identify an immediate safety subtotal, a dated monitoring plan for the seep, scheduled maintenance, and a comfort repair. If the steering diagnosis expands or other major systems are weak, the driver can compare that essential path with replacement before committing to the entire list."
+    ],
+    nextSteps: [
+      "Ask the shop to label every line by urgency, evidence, consequence of delay, and recheck date.",
+      "Request separate written subtotals for immediate, 90-day, 12-month, routine, and optional work.",
+      "Confirm whether related jobs share labor and whether staging the work changes the warranty or diagnostic certainty.",
+      "Get another qualified opinion when the scope or urgency remains unclear, if the vehicle can be moved safely."
+    ],
+    faqs: [
+      {
+        question: "Should I fix all recommended car repairs at once?",
+        answer:
+          "Not automatically. Some work may be urgent or share labor, while other items may be routine, monitor-only, or optional. Ask the shop to explain the timing and dependencies in writing."
+      },
+      {
+        question: "How do I know which car repair is most urgent?",
+        answer:
+          "Ask what condition was observed, what can happen if it is delayed, whether the car is safe to drive, and what measurement or symptom determines urgency. An online list cannot assess your vehicle."
+      },
+      {
+        question: "Can I ask a mechanic to prioritize an estimate?",
+        answer:
+          "Yes. Ask for separate categories and subtotals, plus a reinspection date or trigger for anything marked monitor. State estimate requirements vary, but clear written scope helps you decide."
+      },
+      {
+        question: "When does a long repair list mean I should replace the car?",
+        answer:
+          "Consider replacement more seriously when the essential work spans several major systems, the diagnosis or outcome is uncertain, downtime is costly, or the conservative repair path approaches a realistic replacement cost."
+      }
+    ],
+    related: [
+      "is-suspension-repair-worth-it-on-an-old-car",
+      "is-my-car-a-money-pit",
+      "repair-costs-more-than-car-value",
+      "is-it-worth-getting-a-second-opinion-on-a-car-repair",
+      "should-i-fix-my-old-car-or-buy-another-one"
+    ],
+    sectionLabels: {
+      repairMakesSense: "Use a five-level urgency plan",
+      replaceMakesSense: "Find dependencies and realistic timing",
+      numbersToCompare: "Turn one total into decision-ready subtotals",
+      safetyFactors: "Let evidence, not price, set urgency",
+      example: "Example: a $4,600 inspection report",
+      nextSteps: "Ask the shop for a prioritized plan"
+    },
+    nextStepIntro:
+      "A prioritized estimate should tell you what needs attention, why it matters, when it matters, and what evidence would change the timeline. Vague labels such as urgent or recommended are not enough by themselves.",
+    sources: [
+      {
+        label: "Federal Trade Commission: Auto Repair Basics",
+        url: "https://consumer.ftc.gov/articles/0211-auto-repair-basics",
+        note: "Explains written estimates, authorization limits, maintenance schedules, parts, warranties, and second opinions."
+      },
+      {
+        label: "National Highway Traffic Safety Administration: Vehicle recalls",
+        url: "https://www.nhtsa.gov/recalls",
+        note: "Official VIN and license-plate lookup for unrepaired safety recalls from participating manufacturers."
+      }
+    ]
+  },
+  {
+    slug: "check-recalls-and-warranty-before-car-repair",
+    title: "Before Paying for a Major Repair, Check Recalls and Warranty Coverage",
+    seoTitle: "Check Recalls and Warranty Coverage Before a Car Repair",
+    description:
+      "Before approving a major car repair, check the VIN for open recalls and review manufacturer warranty or service-contract coverage, authorization rules, and documentation.",
+    targetQuery: "is my car repair covered by a recall",
+    category: "Sell, trade, or get another opinion",
+    publishedDate: seoReviewDate,
+    lastReviewedDate: seoReviewDate,
+    directAnswer:
+      "Before paying for a major repair, search your VIN for an open safety recall and review any active manufacturer warranty or service contract. A similar symptom does not prove that your repair is covered. Confirm the VIN, failed component, eligibility dates or mileage, exclusions, and authorization process with the manufacturer, dealer, or contract administrator before work begins when practical.",
+    intro: [
+      "Coverage can change the repair-or-replace calculation by thousands of dollars, but the labels are easy to mix up. A safety recall, manufacturer warranty, optional service contract, and manufacturer service campaign are different programs with different eligibility and remedies.",
+      "Use official records and written contract terms. A search result, forum post, dashboard warning, or matching symptom can help you ask a question, but it cannot approve a claim for your specific vehicle."
+    ],
+    summary:
+      "Start with the 17-character VIN. Check NHTSA's recall lookup, then contact the manufacturer or an authorized dealer with the VIN and recall campaign number. Separately review the original warranty and any service contract for time, mileage, covered parts, exclusions, deductible, preauthorization, diagnostic, teardown, labor, towing, and rental terms.",
+    repairMakesSense: [
+      "Safety recall: an official action addressing a safety defect or noncompliance. Confirm that the recall is open for your VIN and ask the manufacturer or dealer about the remedy and parts availability.",
+      "Manufacturer warranty: coverage included with the vehicle for specified defects or malfunctions during stated time and mileage limits. Read the warranty booklet and confirm the in-service date and mileage.",
+      "Service contract: optional paid coverage, sometimes marketed as an extended warranty. Identify the actual administrator, covered components, exclusions, deductible, claim limit, and approved repair facilities.",
+      "Service campaign or goodwill assistance: manufacturer-specific programs that are not necessarily safety recalls. Ask the manufacturer directly whether your VIN and repair qualify, and get any offer in writing.",
+      "Repair warranty: protection offered by the shop or part supplier for prior work. Review the original invoice for parts, labor, mileage, time, and claim-location limits."
+    ],
+    replaceMakesSense: [
+      "Find the VIN on the lower windshield, registration, insurance document, or driver-door area and verify all 17 characters.",
+      "Search the official NHTSA recall tool and save the campaign number and result. Then confirm current status with the manufacturer or authorized dealer.",
+      "Gather the purchase date, current mileage, warranty booklet, service-contract agreement, maintenance records, prior repair invoices, diagnosis, and written estimate.",
+      "Before authorizing work, ask who must approve the claim, where the car may be repaired, whether diagnosis or teardown requires approval, and who pays if the claim is denied.",
+      "Record names, dates, case numbers, promised coverage, your deductible, excluded charges, reimbursement instructions, and parts availability."
+    ],
+    numbersToCompare: [
+      "Your out-of-pocket amount after deductible, uncovered diagnostics, teardown, labor-rate limits, taxes, fluids, towing, rental, and excluded related parts.",
+      "Whether the program reimburses you after payment or pays the repair facility directly, and how long approval or reimbursement may take.",
+      "Coverage limits per repair and in total, including depreciation or partial-payment terms tied to vehicle mileage.",
+      "The financial risk if work starts before authorization, the diagnosis changes, or disassembly reveals a non-covered cause.",
+      "The repair-or-replace comparison using the confirmed covered amount, not the hopeful amount."
+    ],
+    safetyFactors: [
+      "A recall search is not a safety inspection. If the vehicle has a serious symptom, ask a qualified professional whether it should be driven or towed.",
+      "An open recall does not prove that every similar symptom comes from the recalled defect. Let the manufacturer or authorized repair facility follow the required identification and remedy process.",
+      "Do not delay urgent professional guidance while waiting for a warranty or service-contract decision if the vehicle may be unsafe.",
+      "If recall parts are unavailable, ask the manufacturer or dealer for written interim instructions and case documentation rather than inventing your own workaround."
+    ],
+    example: [
+      "A driver receives a $4,200 estimate after a warning light and loss of power. Before approving the work, they search the VIN and find an open manufacturer recall involving a related system. That result is a reason to call the manufacturer and authorized dealer, not proof that the quoted repair is free.",
+      "The dealer checks the VIN, inspects the vehicle under the recall process, and explains which remedy is covered. A separate worn component is not part of the recall. The driver's comparison now uses the remaining uncovered repair amount rather than the original $4,200 or an assumption of full coverage.",
+      "If the VIN had no open recall, the next checks would still matter: original warranty, emissions or component-specific coverage where applicable, optional service contract, and any warranty on prior repair work. Eligibility must be confirmed from the governing terms."
+    ],
+    nextSteps: [
+      "Copy the VIN carefully and search the official NHTSA recall database.",
+      "Call the manufacturer or authorized dealer to confirm VIN eligibility, remedy status, parts availability, and next steps.",
+      "Read the actual warranty or service-contract agreement and obtain claim authorization before work begins when required.",
+      "Keep the estimate, diagnosis, invoices, maintenance records, claim numbers, and written coverage decision together."
+    ],
+    faqs: [
+      {
+        question: "Are safety recall repairs free?",
+        answer:
+          "NHTSA explains that manufacturers must provide an appropriate remedy for a safety recall, generally without charge. Confirm that the recall is open for your VIN and arrange the remedy with the manufacturer or authorized dealer."
+      },
+      {
+        question: "Does a matching symptom mean my repair is covered by a recall?",
+        answer:
+          "No. Recall eligibility and the cause of the symptom must be confirmed for your specific VIN. A similar description is useful context, not claim approval."
+      },
+      {
+        question: "Is an extended warranty the same as a manufacturer warranty?",
+        answer:
+          "Often no. The FTC explains that an optional auto service contract is sold separately and is not a warranty as defined by federal law. Coverage and claims terms vary, so read the contract."
+      },
+      {
+        question: "What if I already paid for a repair before a recall?",
+        answer:
+          "Some pre-recall repairs may qualify for reimbursement under specific conditions and documentation rules. Contact the manufacturer with the recall campaign, VIN, repair order, and proof of payment rather than assuming eligibility."
+      }
+    ],
+    related: [
+      "is-catalytic-converter-replacement-worth-it",
+      "how-to-compare-auto-repair-estimates",
+      "is-it-worth-getting-a-second-opinion-on-a-car-repair",
+      "is-a-hybrid-battery-replacement-worth-it",
+      "is-transmission-replacement-worth-it"
+    ],
+    sectionLabels: {
+      repairMakesSense: "Know which kind of coverage you have",
+      replaceMakesSense: "Run a coverage check before work begins",
+      numbersToCompare: "Confirm what you would actually pay",
+      safetyFactors: "Coverage status is not a safety diagnosis",
+      example: "Example: a related recall and a separate repair",
+      nextSteps: "Complete the check in this order"
+    },
+    nextStepIntro:
+      "The order matters. Verify the VIN and governing terms before relying on coverage in your repair decision, and obtain preauthorization whenever the program requires it.",
+    sources: [
+      {
+        label: "National Highway Traffic Safety Administration: Check for recalls",
+        url: "https://www.nhtsa.gov/recalls",
+        note: "Official lookup for open safety recalls by VIN or license plate, plus general recall, investigation, complaint, and manufacturer-communication information."
+      },
+      {
+        label: "Federal Trade Commission: Auto warranties and auto service contracts",
+        url: "https://consumer.ftc.gov/articles/auto-warranties-and-auto-service-contracts",
+        note: "Explains the difference between warranties and service contracts, common coverage limits, claims questions, and service-contract scams."
+      },
+      {
+        label: "Federal Trade Commission: Auto Repair Basics",
+        url: "https://consumer.ftc.gov/articles/0211-auto-repair-basics",
+        note: "Guidance on written estimates, parts, repair orders, and repair warranties."
+      }
     ]
   }
 ];

@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChecklistSignup } from "@/components/ChecklistSignup";
+import { BrandMark } from "@/components/BrandMark";
 import { siteConfig } from "@/lib/site";
 
 const links = [
-  { href: "/calculator", label: "Calculator" },
+  { href: "/calculator", label: "Compare options" },
+  { href: "/how-it-works", label: "How it works" },
   { href: "/guides", label: "Guides" },
+  { href: "/checklist", label: "Checklist" },
+  { href: "/about", label: "About" },
   { href: "/methodology", label: "Methodology" },
   { href: "/disclaimer", label: "Disclaimer" },
   { href: "/affiliate-disclosure", label: "Affiliate Disclosure" },
@@ -15,7 +19,7 @@ const links = [
   { href: "/terms", label: "Terms" }
 ];
 
-const formlessPaths = new Set(["/disclaimer", "/privacy", "/terms", "/affiliate-disclosure"]);
+const formlessPaths = new Set(["/about", "/calculator", "/results", "/checklist", "/disclaimer", "/privacy", "/terms", "/affiliate-disclosure"]);
 
 export function Footer() {
   const pathname = usePathname();
@@ -29,14 +33,22 @@ export function Footer() {
             <ChecklistSignup placement="footer" />
           </div>
         ) : null}
-        <div className="grid gap-3 sm:flex sm:flex-wrap sm:gap-x-6">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} className="min-h-10 rounded-md py-2 text-sm font-semibold text-ink-700 hover:text-brand-700">
-              {link.label}
-            </Link>
-          ))}
+        <div className="grid gap-10 border-t border-line pt-9 lg:grid-cols-[15rem_1fr]">
+          <div>
+            <BrandMark />
+            <p className="mt-4 max-w-[15rem] text-sm leading-6 text-ink-600">
+              Independent decision support for a major repair estimate.
+            </p>
+          </div>
+          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3">
+            {links.map((link) => (
+              <Link key={link.href} href={link.href} className="min-h-11 rounded-md py-2 text-sm font-semibold text-ink-700 hover:text-brand-700">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </div>
-        <p className="mt-6 max-w-3xl text-sm leading-6 text-ink-600">
+        <p className="mt-8 max-w-3xl text-sm leading-6 text-ink-600">
           This tool provides educational estimates only. It does not replace advice from a qualified mechanic, financial
           professional, or safety inspector.
         </p>

@@ -1,6 +1,7 @@
 import { ContentPage } from "@/components/ContentPage";
 import { pageMetadata } from "@/lib/metadata";
 import { siteConfig } from "@/lib/site";
+import { affiliateOffersConfigured } from "@/lib/partner-offers";
 
 export const metadata = pageMetadata({
   title: "Privacy Policy",
@@ -12,7 +13,7 @@ export default function PrivacyPage() {
   return (
     <ContentPage
       title="Privacy Policy"
-      lastUpdated="July 15, 2026"
+      lastUpdated="October 8, 2026"
       showBottomLinks
       intro="Car Second Opinion is designed as a lightweight educational tool. The calculator does not require an account and does not store your calculation on our servers."
     >
@@ -40,24 +41,25 @@ export default function PrivacyPage() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold text-ink-950">Google Search Console and Google Analytics</h2>
+        <h2 className="text-2xl font-bold text-ink-950">Search measurement and optional analytics</h2>
         <p className="mt-3 leading-7">
           We use Google Search Console to understand how pages appear in Google Search, including search queries,
           impressions, clicks, indexing status, and crawl issues. Search Console is not used to track individual
           calculator inputs.
         </p>
         <p className="mt-3 leading-7">
-          We use Google Analytics 4 through the Google tag to understand general site usage. Google Analytics may collect
-          information such as page URL, page title, referrer, approximate location, device and browser information,
-          session information, and interaction events. The site may send events such as calculator starts, calculator
-          completions, result type, safety-warning results, outbound search link clicks, checklist downloads, checklist
-          email request clicks, and email-results clicks.
+          We currently use Google Analytics 4 (GA4) on the live website to understand site visits and how people use
+          features such as the calculator. Analytics loads only when explicitly enabled in the site configuration.
+          We do not currently use Vercel Speed Insights.
         </p>
         <p className="mt-3 leading-7">
-          Analytics events are used in aggregate to improve the site and understand whether the calculator is useful.
-          We do not intentionally send your repair quote, vehicle identification number, contact details, or other
-          sensitive personal details to Google Analytics. Google may process analytics information according to its own
-          policies and controls.
+          GA4 may process general usage information such as page URL, page title, referrer, approximate location,
+          browser and device information, session information, cookies or similar identifiers, and interaction events.
+          We send limited event details such as calculator step number or broad result category. Our analytics event
+          design excludes repair amounts, vehicle make and model, ZIP code, free text, email address, and complete
+          calculation payloads. Google processes the analytics information it receives under its own policies.
+          Learn more about{" "}
+          <a className="underline underline-offset-4" href="https://www.google.com/policies/privacy/partners/">how Google uses information from sites using its services</a>.
         </p>
       </section>
 
@@ -65,20 +67,19 @@ export default function PrivacyPage() {
         <h2 className="text-2xl font-bold text-ink-950">Cookies and local storage</h2>
         <p className="mt-3 leading-7">
           The calculator uses browser local storage for the limited purpose of showing your results after you complete
-          the calculator. Google Analytics may use cookies or similar technologies to measure visits and interactions.
-          Your browser settings may let you block or delete cookies and local storage, though doing so may affect site
-          functionality. Google also provides browser and account-level tools that may limit or opt out of some Google
-          Analytics measurement.
+          the calculator. GA4 may use analytics cookies or similar identifiers to measure site activity. You can
+          manage or block cookies through your browser settings, or use the{" "}
+          <a className="underline underline-offset-4" href="https://support.google.com/analytics/answer/181881">Google Analytics opt-out browser add-on</a>
+          {" "}where supported. Blocking cookies or local storage may affect some site functionality.
         </p>
       </section>
 
       <section>
         <h2 className="text-2xl font-bold text-ink-950">Advertising and affiliate monetization</h2>
         <p className="mt-3 leading-7">
-          Car Second Opinion does not currently use display advertising, Google AdSense, affiliate links, paid rankings,
-          sponsored placements, or vendor directories. If third-party ads or ad networks are added later, those vendors
-          may use cookies or similar technologies to serve, personalize, measure, or limit ads. We will update this
-          policy and related disclosures before enabling ad networks or monetized affiliate relationships.
+          {affiliateOffersConfigured()
+            ? "Car Second Opinion may include a clearly disclosed optional affiliate link on a calculator result page. Clicking it opens a third-party website with its own privacy practices. We do not transmit your calculator entries to the partner through that link. We do not currently run display ads, paid rankings, sponsored directories, or ad networks."
+            : "Car Second Opinion does not currently use display advertising, Google AdSense, affiliate links, paid rankings, sponsored placements, or vendor directories. We will update this policy before enabling advertising networks or monetized affiliate relationships."}
         </p>
       </section>
 
@@ -126,9 +127,9 @@ export default function PrivacyPage() {
         <h2 className="text-2xl font-bold text-ink-950">Your choices</h2>
         <p className="mt-3 leading-7">
           You can avoid entering information into the calculator, clear local storage in your browser, use private
-          browsing, disable or delete cookies where your browser allows it, use available Google privacy controls, or
-          contact us with privacy questions. Because the MVP does not use accounts or a calculator database, we may not
-          be able to identify calculator data that only exists in your browser.
+          browsing, disable or delete cookies where your browser allows it, or contact us with privacy questions.
+          Because the MVP does not use accounts or a calculator database, we may not be able to identify calculator data
+          that only exists in your browser.
         </p>
       </section>
 

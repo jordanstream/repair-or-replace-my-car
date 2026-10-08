@@ -8,3 +8,12 @@ dist/
 .env*.local
 coverage/
 *.tsbuildinfo
+
+# Security guardrails for local credentials and caches
+.env*
+!.env.example
+*.pem
+*.p12
+*.key
+**/tmp/
+**/*.zip

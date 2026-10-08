@@ -98,7 +98,7 @@ export default function AboutPage() {
         <h2 className="text-2xl font-bold text-ink-950">Editorial independence and monetization</h2>
         <p className="mt-3 leading-7">
           Calculator results are based on user-entered assumptions and the published calculation logic. They are not
-          currently changed by paid rankings, sponsored placements, repair-shop relationships, dealer relationships,
+          changed by paid rankings, sponsored placements, repair-shop relationships, dealer relationships,
           lender relationships, or affiliate commissions.
         </p>
         <p className="mt-3 leading-7">

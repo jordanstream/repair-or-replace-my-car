@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { ChecklistSignup } from "@/components/ChecklistSignup";
+import { PartnerOffer } from "@/components/PartnerOffer";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { CostChart } from "@/components/CostChart";
 import { EstimateDisclaimer, safetyWarningText } from "@/components/EstimateDisclaimer";
@@ -511,6 +512,8 @@ export function ResultsClient() {
         </div>
       </Card>
 
+      <PartnerOffer outcome={result.outcome} safetyFlag={result.safetyFlag} />
+
       <details
         className="rounded-lg border border-line bg-white p-6"
         onToggle={(event) => {
@@ -529,8 +532,8 @@ export function ResultsClient() {
       <section className="rounded-lg border border-line bg-white p-6">
         <h2 className="text-2xl font-bold text-ink-950">Optional next steps</h2>
         <p className="mt-3 text-sm leading-6 text-ink-600">
-          External links may take you to third-party services. These are not paid placements or affiliate links right
-          now. Ratings, availability, pricing, licensing, insurance, and service quality can change. We do not guarantee
+          The search and information links below are not paid placements. Any affiliate option is labeled separately
+          above. Ratings, availability, pricing, licensing, insurance, and service quality can change. We do not guarantee
           third-party services or outcomes.
         </p>
         <div className="mt-5 grid gap-4 md:grid-cols-2">

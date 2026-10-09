@@ -23,6 +23,10 @@ assert.ok(wwwRedirect, "www host redirect must exist");
 assert.equal(wwwRedirect.source, "/:path*", "www redirect must preserve every path");
 assert.equal(wwwRedirect.destination, "https://carsecondopinion.com/:path*", "www redirect must target canonical host");
 assert.equal(wwwRedirect.permanent, true, "www redirect must be permanent");
+const opinionRedirect = redirectRules.find((rule) => rule.source === "/guides/is-it-worth-getting-a-second-opinion-on-car-repair");
+assert.ok(opinionRedirect, "historical second-opinion URL must redirect");
+assert.equal(opinionRedirect.destination, "/guides/is-it-worth-getting-a-second-opinion-on-a-car-repair");
+assert.equal(opinionRedirect.permanent, true, "historical redirect must be permanent");
 
 const sitemapEntries = sitemap();
 const sitemapUrls = sitemapEntries.map((entry) => entry.url);
@@ -145,6 +149,19 @@ assert.deepEqual(
   "breadcrumb schema positions must be sequential"
 );
 assert.equal(breadcrumbItems[2].item, `${siteConfig.url}/guides/${priorityGuide.slug}`);
+
+const fiveThousandGuide = getGuide("is-a-5000-dollar-car-repair-worth-it");
+assert.ok(fiveThousandGuide, "$5,000 guide must remain available");
+assert.equal(fiveThousandGuide.seoTitle, "Is a $5,000 Car Repair Worth It?");
+assert.ok(fiveThousandGuide.example.length >= 3, "$5,000 guide must include a comparable worked example");
+
+const homepageSource = readFileSync(resolve(process.cwd(), "app/page.tsx"), "utf8");
+for (const slug of ["is-a-3000-dollar-car-repair-worth-it", "is-a-5000-dollar-car-repair-worth-it", "should-i-fix-my-old-car-or-buy-another-one", "repair-costs-more-than-car-value"]) {
+  assert.ok(getGuide(slug), `featured homepage guide missing from registry: ${slug}`);
+  assert.ok(homepageSource.includes(`"${slug}"`), `featured homepage guide not listed: ${slug}`);
+}
+const calculatorSource = readFileSync(resolve(process.cwd(), "app/calculator/page.tsx"), "utf8");
+assert.ok(calculatorSource.includes("What does this repair-or-replace calculator compare?"), "calculator explainer must remain present");
 
 const guidePageSource = readFileSync(resolve(process.cwd(), "components/GuidePage.tsx"), "utf8");
 assert.match(guidePageSource, /aria-label="Breadcrumb"/, "visible breadcrumb navigation must be labeled");

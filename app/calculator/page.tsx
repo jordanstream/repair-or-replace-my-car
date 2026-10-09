@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { CalculatorForm } from "@/components/CalculatorForm";
 import { EstimateDisclaimer } from "@/components/EstimateDisclaimer";
@@ -40,6 +41,13 @@ export default function CalculatorPage() {
         <Suspense fallback={<div className="min-h-96 rounded-2xl border border-line bg-white p-7"><p className="font-semibold text-ink-800">Preparing your comparison…</p></div>}>
           <CalculatorForm />
         </Suspense>
+
+        <section aria-labelledby="repair-replace-explanation" className="mt-8 rounded-xl border border-line bg-white p-5 sm:p-6">
+          <h2 id="repair-replace-explanation" className="text-xl font-bold text-ink-950">What does this repair-or-replace calculator compare?</h2>
+          <p className="mt-3 leading-7 text-ink-700">It compares repairing and keeping your current car with buying a used or new replacement over the same 12-, 24-, or 36-month period. The results are based on your figures and assumptions, not a live repair-price database or mechanical diagnosis.</p>
+          <p className="mt-3 leading-7 text-ink-700">Use your written repair quote, expected future repairs, vehicle value, and any loan balance alongside realistic replacement costs. Review safety concerns with a qualified professional independently of the cost comparison.</p>
+          <p className="mt-3 text-sm leading-6 text-ink-700">For more context, read <Link href="/guides/repair-costs-more-than-car-value" className="font-semibold text-brand-700 underline underline-offset-4">when repairs exceed car value</Link> or <Link href="/guides/should-i-fix-my-old-car-or-buy-another-one" className="font-semibold text-brand-700 underline underline-offset-4">whether to fix an old car or buy another one</Link>.</p>
+        </section>
 
         <div className="mt-8 grid gap-6 border-t border-line pt-8 lg:grid-cols-[1fr_auto] lg:items-start">
           <EstimateDisclaimer />

@@ -1,0 +1,43 @@
+name: SEO preview regression checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Calculator, navigation, SEO, affiliate, lint, typecheck, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Check out submitted PR (read-only)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Set up Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Calculator financial and safety scenarios
+        run: node --import tsx tests/calculator-scenarios.ts
+      - name: Navigation and calculator flow contracts
+        run: node --import tsx tests/calculator-navigation-contract.ts
+      - name: SEO and redirect contracts
+        run: node --import tsx tests/seo-contracts.ts
+      - name: Affiliate disclosure release contracts
+        run: node --import tsx tests/affiliate-release-contracts.ts
+      - name: ESLint
+        run: npm run lint
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Production build compilation (no deployment)
+        run: npm run build

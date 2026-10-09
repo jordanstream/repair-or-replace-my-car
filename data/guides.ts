@@ -53,6 +53,7 @@ export const guideCategories: GuideCategory[] = [
 const publishedDate = "2026-07-14";
 const lastReviewedDate = "2026-07-14";
 const seoReviewDate = "2026-07-22";
+const seoRefreshDate = "2026-10-08";
 
 export const guides: Guide[] = [
   ...repairTypeGuides,
@@ -145,13 +146,13 @@ export const guides: Guide[] = [
   {
     slug: "is-a-5000-dollar-car-repair-worth-it",
     title: "Is a $5,000 Car Repair Worth It?",
-    seoTitle: "Is a $5,000 Car Repair Worth It? Fix or Replace Your Car",
+    seoTitle: "Is a $5,000 Car Repair Worth It?",
     description:
-      "A $5,000 car repair can be worth it in some cases, but it deserves a careful repair-vs-replace comparison. Review car value, mileage, reliability, and replacement costs.",
+      "Is a $5,000 car repair worth it? Compare the quote, your car's condition, expected follow-up repairs, and the full cost of replacing it.",
     targetQuery: "is a $5,000 car repair worth it",
     category: "Repair cost decisions",
     publishedDate,
-    lastReviewedDate,
+    lastReviewedDate: seoRefreshDate,
     directAnswer:
       "A $5,000 repair is a major decision. It may be worth considering if the car is safe, otherwise dependable, and replacing it would create a much higher total cost. It may be a sign to compare replacement options if the vehicle has repeated problems, high mileage, negative equity, or safety concerns.",
     intro: [
@@ -189,7 +190,8 @@ export const guides: Guide[] = [
     ],
     example: [
       "A driver with a paid-off SUV receives a $5,000 transmission quote. Replacing the SUV might require a $3,000 down payment, a monthly loan payment, higher insurance, and taxes. If the SUV is otherwise in good condition, repairing may still be financially reasonable.",
-      "If that SUV also has engine issues, rust, or electrical problems, replacement may deserve more serious consideration. The $5,000 quote is not the only number. The likely next repair matters too."
+      "If that SUV also has engine issues, rust, or electrical problems, replacement may deserve more serious consideration. The $5,000 quote is not the only number. The likely next repair matters too.",
+      "For a fair 24-month comparison, add expected follow-up repairs to the $5,000 quote. For a financed replacement, compare the down payment, 24 months of payments, purchase fees, insurance differences, and expected upkeep, while accounting for any as-is sale proceeds and remaining loan. Do not also add the entire financed purchase price to those payments."
     ],
     nextSteps: [
       "Ask the mechanic what caused the failure and what related parts should be inspected.",
@@ -317,11 +319,11 @@ export const guides: Guide[] = [
     title: "Is Replacing a Transmission Worth It?",
     seoTitle: "Is Replacing a Transmission Worth It?",
     description:
-      "See when replacing a transmission may be worth it by comparing the quote, warranty, mileage, vehicle condition, safety, and replacement costs.",
+      "Transmission replacement worth it? Compare the installed quote, warranty, other major repairs, and the full cost of keeping or replacing the car.",
     targetQuery: "is it worth replacing a transmission",
     category: "Major repair types",
     publishedDate,
-    lastReviewedDate: seoReviewDate,
+    lastReviewedDate: seoRefreshDate,
     directAnswer:
       "Transmission replacement may be worth it if the vehicle is otherwise in good shape, the repair comes with a clear written estimate, and the total cost is lower than replacing the car. It may be harder to justify if the car has high mileage, other major issues, or a low value compared with the repair bill.",
     intro: [
@@ -391,6 +393,7 @@ export const guides: Guide[] = [
     related: [
       "used-vs-rebuilt-vs-remanufactured-transmission",
       "is-a-5000-dollar-car-repair-worth-it",
+      "repair-costs-more-than-car-value",
       "should-i-fix-my-old-car-or-buy-another-one",
       "is-it-worth-getting-a-second-opinion-on-a-car-repair"
     ]
@@ -1063,13 +1066,13 @@ export const guides: Guide[] = [
   {
     slug: "repair-costs-more-than-car-value",
     title: "Repair Costs More Than My Car Is Worth: Should I Fix It?",
-    seoTitle: "Repair Costs More Than Your Car Is Worth? What to Compare",
+    seoTitle: "Repair Costs More Than Car Value?",
     description:
-      "A repair can cost more than a car's market value and still be worth comparing. Use repair-to-value, time-horizon, reliability, and replacement-cost math before deciding.",
+      "Repair costs more than your car is worth? Compare the full repair cost, likely follow-up work, and realistic replacement costs before deciding.",
     targetQuery: "repair costs more than car value",
     category: "Repair cost decisions",
     publishedDate: seoReviewDate,
-    lastReviewedDate: seoReviewDate,
+    lastReviewedDate: seoRefreshDate,
     directAnswer:
       "A repair that costs more than your car's market value is not automatically a bad decision. Market value tells you what the car may sell for today, while the repair decision is about the cost of getting dependable transportation from this point forward. Compare the complete repair path with a realistic replacement over the same 12, 24, or 36 months.",
     intro: [
@@ -1142,6 +1145,7 @@ export const guides: Guide[] = [
       "is-a-3000-dollar-car-repair-worth-it",
       "is-a-5000-dollar-car-repair-worth-it",
       "should-i-fix-my-old-car-or-buy-another-one",
+      "is-transmission-replacement-worth-it",
       "should-i-repair-a-car-i-still-owe-money-on"
     ],
     sources: [

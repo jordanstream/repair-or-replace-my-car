@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { guides } from "@/data/guides";
+import { getGuide } from "@/data/guides";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -9,6 +9,14 @@ export const metadata = pageMetadata({
     "Compare repairing your car with realistic used and new replacement costs, understand what is driving the result, and learn what to verify next.",
   path: "/"
 });
+
+const featuredGuideSlugs = [
+  "is-a-3000-dollar-car-repair-worth-it",
+  "is-a-5000-dollar-car-repair-worth-it",
+  "should-i-fix-my-old-car-or-buy-another-one",
+  "repair-costs-more-than-car-value"
+];
+const featuredGuides = featuredGuideSlugs.map((slug) => getGuide(slug)).filter((guide) => guide !== undefined);
 
 const paths = [
   { label: "Repair and keep", value: "$8,420", detail: "Quote, current payments, future repairs" },
@@ -228,7 +236,7 @@ export default function HomePage() {
               </h2>
             </div>
             <div className="border-t border-line">
-              {guides.slice(0, 4).map((guide) => (
+              {featuredGuides.map((guide) => (
                 <Link
                   key={guide.slug}
                   href={`/guides/${guide.slug}`}

@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         source: "/guides/is-a-5000-car-repair-worth-it",
         destination: "/guides/is-a-5000-dollar-car-repair-worth-it",
         permanent: true
+      },
+      {
+        source: "/guides/is-it-worth-getting-a-second-opinion-on-car-repair",
+        destination: "/guides/is-it-worth-getting-a-second-opinion-on-a-car-repair",
+        permanent: true
       }
     ];
   }

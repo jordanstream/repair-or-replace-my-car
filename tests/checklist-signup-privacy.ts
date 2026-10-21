@@ -1,15 +1,21 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const route = readFileSync("app/api/kit/subscribe/route.ts", "utf8");
+const route = readFileSync("app/api/checklist/subscribe/route.ts", "utf8");
 const signup = readFileSync("components/ChecklistSignup.tsx", "utf8");
-
-assert.match(route, /maxBodyBytes = 2048/, "request body must be bounded");
-assert.match(route, /getReader\(\)/, "request body must be read with bounded streaming");
-assert.match(route, /content-type/, "request type must be validated");
-assert.match(route, /email\.length > 254/, "email length must be bounded");
-assert.match(route, /subscriberResult\.status === 429/, "upstream throttling should map to 429");
-assert.doesNotMatch(route, /referrer|cso_signup_placement/, "do not forward page data to Kit");
-assert.doesNotMatch(signup, /window\.location\.href : ""/, "do not post current page URL");
-assert.match(signup, /response\.status === 429/, "show a useful rate-limit message");
+const oldKitRouteExists = (() => {
+  try { readFileSync("app/api/kit/subscribe/route.ts"); return true; } catch { return false; }
+})();
+assert.equal(oldKitRouteExists, false, "old Kit endpoint must be removed");
+assert.match(route, /MAX_BODY_BYTES = 6000/, "request size bounded");
+assert.match(route, /verifyTurnstile/, "server must verify captcha");
+assert.match(route, /data\.hostname === hostname/, "captcha hostname must match request hostname");
+assert.match(route, /valueInputOption=RAW/, "prevent spreadsheet formula injection");
+assert.match(route, /marketingConsent = payload\.marketingConsent === true/, "only explicit opt-in");
+assert.match(route, /CONSENT_VERSION/, "consent version must be recorded");
+assert.doesNotMatch(route, /KIT_API_KEY|KIT_FORM_ID|referrer/, "no Kit secrets or referrer collection");
+assert.doesNotMatch(signup, /\/api\/kit\/subscribe|mailtoFallback/, "no legacy email signup fallback");
+assert.match(signup, /\/api\/checklist\/subscribe/, "new API endpoint used");
+assert.match(signup, /status === "success"/, "download must be conditional upon a saved signup");
+assert.match(signup, /response\.ok/, "success depends on actual response");
 console.log("checklist signup privacy contract: passed");

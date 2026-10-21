@@ -45,9 +45,7 @@ export function ChecklistSignup({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          placement,
-          company,
-          referrer: typeof window !== "undefined" ? window.location.href : ""
+          company
         })
       });
 
@@ -57,6 +55,12 @@ export function ChecklistSignup({
         setStatus("success");
         setMessage("You're on the checklist list. Check your inbox for Kit's confirmation or checklist email.");
         setEmail("");
+        return;
+      }
+
+      if (response.status === 429) {
+        setStatus("error");
+        setMessage("Too many requests right now. Please wait a few minutes before trying again.");
         return;
       }
 

@@ -13,7 +13,7 @@ export default function PrivacyPage() {
   return (
     <ContentPage
       title="Privacy Policy"
-      lastUpdated="October 8, 2026"
+      lastUpdated="October 21, 2026"
       showBottomLinks
       intro="Car Second Opinion is designed as a lightweight educational tool. The calculator does not require an account and does not store your calculation on our servers."
     >
@@ -84,25 +84,32 @@ export default function PrivacyPage() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold text-ink-950">Email and checklist requests</h2>
+        <h2 className="text-2xl font-bold text-ink-950">Contact information and checklist downloads</h2>
+        <p className="mt-3 leading-7">
+          When you request the free checklist, we collect the first name and email address you enter, the date and time,
+          and whether you separately consented to receive occasional tips. Successful requests are stored in a private
+          Google Sheets spreadsheet administered by Car Second Opinion. The download link appears after the request is saved.
+          Google processes this information as our storage provider.
+        </p>
+        <p className="mt-3 leading-7">
+          Marketing emails are optional and require you to select the separate, unchecked consent checkbox. Providing
+          an email address to request the checklist does not, by itself, authorize marketing emails. We do not currently
+          send a marketing series from this signup. Email addresses supplied through the form are not independently verified.
+          We keep these signup records while they are needed to manage requested downloads or consent, and will review
+          records for deletion periodically; you can request access or deletion at{" "}
+          <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
+        </p>
+        <p className="mt-3 leading-7">
+          The signup form uses Cloudflare Turnstile to help prevent automated abuse. Cloudflare may process technical
+          information required for bot detection under its own privacy terms. We verify the challenge on the server
+          before saving a form submission.
+        </p>
         <p className="mt-3 leading-7">
           If you email us at{" "}
-          <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>, we will receive your email
-          address and any information you choose to include. We use that information to read and respond to your message.
-          Do not send sensitive financial, insurance, legal, medical, or vehicle-identifying information unless you are
-          comfortable sharing it by email.
-        </p>
-        <p className="mt-3 leading-7">
-          Checklist request forms may use Kit, our email provider, to collect your email address and send checklist or
-          follow-up emails you requested. Kit may process your email address, signup page, timing, and email engagement
-          according to its own privacy and email-delivery practices. You can unsubscribe from checklist emails using the
-          unsubscribe link included in those messages.
-        </p>
-        <p className="mt-3 leading-7">
-          If Kit is unavailable or not connected, checklist request forms may fall back to your own email app and create
-          a message addressed to {siteConfig.contactEmail}. The &quot;Email My Results&quot; action also uses your own email app
-          and creates a draft for you to address and send yourself. Car Second Opinion does not receive that results
-          draft unless you choose to send it to us.
+          <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>, we receive the email address
+          and content you choose to send. Do not email sensitive financial, medical, vehicle-identifying, or other
+          confidential information. The &quot;Email My Results&quot; feature creates a draft in your own email app; we do
+          not receive that draft unless you send it to us.
         </p>
       </section>
 

@@ -8,7 +8,7 @@ type Placement = "results" | "guide" | "footer" | "checklist";
 
 export function ChecklistEmailPopup({
   placement,
-  children = "Email me the checklist",
+  children = "Get My Free Checklist",
   className = "",
   buttonVariant = "primary"
 }: {
@@ -104,7 +104,7 @@ export function ChecklistEmailPopup({
             type="button"
             className="absolute inset-0 cursor-default"
             tabIndex={-1}
-            aria-label="Close checklist email form"
+            aria-label="Close checklist request form"
             onClick={closeDialog}
           />
           <div
@@ -118,10 +118,10 @@ export function ChecklistEmailPopup({
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Free PDF</p>
                 <h2 id={titleId} className="mt-2 text-2xl font-bold text-ink-950">
-                  Email me the checklist
+                  Get My Free Checklist
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-ink-700">
-                  Send the printable Major Car Repair Decision Checklist to your inbox.
+                  Enter your first name and email, then download the PDF after your request is saved.
                 </p>
               </div>
               <button

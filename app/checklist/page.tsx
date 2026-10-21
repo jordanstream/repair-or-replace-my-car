@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
-import { ChecklistDownloadLink } from "@/components/ChecklistDownloadLink";
 import { ChecklistEmailPopup } from "@/components/ChecklistEmailPopup";
 import { pageMetadata } from "@/lib/metadata";
 
@@ -56,21 +55,18 @@ export default function ChecklistPage() {
               Get the Car Second Opinion checklist that helps you compare the repair path against realistic replacement
               assumptions before stress, shop pressure, or a monthly payment makes the decision for you.
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <ChecklistDownloadLink placement="checklist" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-brand-600 bg-brand-600 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-700">
-                Download the checklist
-              </ChecklistDownloadLink>
+            <div className="mt-7">
               <ChecklistEmailPopup
                 placement="checklist"
-                buttonVariant="secondary"
                 className="min-h-12 px-6 text-base"
               >
-                Email me the checklist
+                Get My Free Checklist
               </ChecklistEmailPopup>
             </div>
             <p className="mt-4 text-sm leading-6 text-ink-600">
-              No account needed. Educational worksheet only. Use qualified professionals for mechanical, safety,
-              financial, insurance, or purchasing advice.
+              Enter your first name and email, then download your PDF immediately after submission.
+              No account or marketing opt-in required. Educational worksheet only; seek qualified advice
+              for mechanical, safety, financial, insurance, or purchasing decisions.
             </p>
           </div>
 
@@ -147,13 +143,13 @@ export default function ChecklistPage() {
           </p>
         </div>
         <div className="border border-line bg-brand-100 p-6">
-          <h3 className="text-xl font-bold text-ink-950">Send it to your inbox</h3>
+          <h3 className="text-xl font-bold text-ink-950">Get the printable checklist</h3>
           <p className="mt-3 text-sm leading-6 text-ink-700">
-            Keep it handy for the repair counter, a second opinion, or a replacement-cost comparison.
+            Enter your name and email to access the free PDF. Download it immediately after your request is saved.
           </p>
           <div className="mt-5">
             <ChecklistEmailPopup placement="checklist" className="w-full min-h-12 text-base">
-              Email me the checklist
+              Get My Free Checklist
             </ChecklistEmailPopup>
           </div>
           <Link

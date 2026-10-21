@@ -38,37 +38,41 @@ Steps:
 3. Use the default Next.js framework settings above.
 4. Set `NEXT_PUBLIC_SITE_URL` to the deployed production URL.
 5. Optionally set `NEXT_PUBLIC_GA_MEASUREMENT_ID` when Google Analytics 4 is ready.
-6. Set Kit email variables when checklist email delivery is ready.
+6. Configure Google Sheets and Cloudflare Turnstile for the private checklist signup, then verify on Preview before Production.
 7. Deploy.
 
 ## Environment Variables
 
-No real secrets are required for the MVP.
+The checklist signup requires server-only secrets. Do not commit these values or share them in public issues.
 
 ```bash
 NEXT_PUBLIC_SITE_URL=https://carsecondopinion.com
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-89CL7WMDH1
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=
 NEXT_PUBLIC_ANALYTICS_PROVIDER=
-KIT_API_KEY=
-KIT_FORM_ID=
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+GOOGLE_SHEETS_SPREADSHEET_ID=
+GOOGLE_SHEETS_CLIENT_EMAIL=
+GOOGLE_SHEETS_PRIVATE_KEY=
 ```
 
-`KIT_API_KEY` is a server-only V4 API key from Kit. Do not expose it with a `NEXT_PUBLIC_` prefix. `KIT_FORM_ID` is the numeric Kit form ID for the checklist signup form. When these are missing, the checklist signup UI falls back to a `mailto:` request to `hello@carsecondopinion.com`.
+## Native Checklist Signup (Google Sheets + Turnstile)
 
-## Kit Free Setup
+This site collects first name and email for a free checklist download, with a separate unchecked checkbox for optional future marketing consent. No Kit, Tally, or mail-delivery provider is required.
 
-Use Kit for checklist email capture and delivery:
+**Google Cloud and Sheets setup:**
+1. In Google Drive, create a private spreadsheet named `CarSecondOpinion — Checklist Leads`. Rename its first tab exactly `Signups`.
+2. Add header cells A1:F1: `Timestamp UTC`, `First Name`, `Email`, `Marketing Consent`, `Consent Version`, `Source`.
+3. In Google Cloud Console, create or select a project, enable the **Google Sheets API**, create a service account, and create a JSON private key. Treat the downloaded JSON file as sensitive.
+4. Share only this spreadsheet with the service account's `client_email`, granting Editor access. Do not make the sheet public.
+5. In Vercel, set the server-only variables `GOOGLE_SHEETS_SPREADSHEET_ID` (from the sheet URL), `GOOGLE_SHEETS_CLIENT_EMAIL` (from the key JSON), and `GOOGLE_SHEETS_PRIVATE_KEY` (the complete JSON `private_key` value). For a line-break-escaped private key, store `\\n` sequences, not literal surrounding quotation marks. Never use `NEXT_PUBLIC_` for these values.
+6. In Cloudflare Turnstile, create a widget allowing the Vercel preview hostname, then add `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and server-only `TURNSTILE_SECRET_KEY` in Vercel Preview env settings.
+7. Redeploy the preview after adding environment variables. Verify invalid/missing Turnstile requests are rejected, one consent-off submission writes `No`, and one consent-on submission writes `Yes`. Confirm the PDF link appears **only** after the successful Sheet append. Remove test rows afterwards.
+8. Configure Turnstile for the production hostnames (`carsecondopinion.com` and `www.carsecondopinion.com`) and production Vercel variables; apply narrow per-IP throttling to POST `/api/checklist/subscribe` in the Vercel firewall before merging/deploying.
+9. Confirm the privacy policy and restrict Sheet sharing to authorized editors only. Set a deletion and consent-handling process before sending any future marketing messages.
 
-1. Create or log in to a free Kit account.
-2. Create an embedded form named `Major Car Repair Decision Checklist`.
-3. Add the checklist download link to the form incentive or first email: `https://carsecondopinion.com/downloads/major-car-repair-decision-checklist.pdf`.
-4. In Kit developer settings, create a V4 API key.
-5. Find the form ID in Kit, or call Kit's `GET /v4/forms` endpoint with the V4 API key.
-6. Add `KIT_API_KEY` and `KIT_FORM_ID` to Vercel project environment variables for Production.
-7. Redeploy.
-
-The app posts checklist signups to `/api/kit/subscribe`, which creates or updates the Kit subscriber and then adds the email address to the configured Kit form. The browser never receives the Kit API key.
+If any variable is missing or Sheets/Turnstile fails, submission fails closed with an error and does not reveal the download in the confirmation UI. The PDF itself remains a public static asset; this is not a secure paywall.
 
 Google Search Console is used for indexing and search-performance reporting. Submit `https://carsecondopinion.com/sitemap.xml` in Search Console and keep `https://carsecondopinion.com/robots.txt` accessible.
 

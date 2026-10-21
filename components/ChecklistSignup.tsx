@@ -21,10 +21,12 @@ const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export function ChecklistSignup({
   placement,
-  variant = "panel"
+  variant = "panel",
+  onSuccess
 }: {
   placement: "results" | "guide" | "footer" | "checklist";
   variant?: "modal" | "panel";
+  onSuccess?: () => void;
 }) {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
@@ -77,6 +79,7 @@ export function ChecklistSignup({
         return;
       }
       setStatus("success");
+      onSuccess?.();
       setMessage("Thanks! Your checklist is ready to download.");
       setFirstName("");
       setEmail("");
@@ -92,8 +95,12 @@ export function ChecklistSignup({
   if (status === "success") {
     return (
       <section className={isModal ? "" : "rounded-lg border border-line bg-white p-5"} aria-live="polite">
-        <h2 className="text-xl font-bold text-ink-950">Your checklist is ready</h2>
-        <p className="mt-2 text-ink-700">{message}</p>
+        {!isModal && (
+          <>
+            <h2 className="text-xl font-bold text-ink-950">Your checklist is ready</h2>
+            <p className="mt-2 text-ink-700">{message}</p>
+          </>
+        )}
         <a
           href={checklistDownloadPath}
           download

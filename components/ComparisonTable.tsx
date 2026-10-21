@@ -4,7 +4,7 @@ const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: 
 
 export function ComparisonTable({ options, lowestKey }: { options: OptionCost[]; lowestKey: OptionCost["key"] }) {
   return (
-    <div className="rounded-2xl border border-line bg-white">
+    <div className="overflow-hidden rounded-2xl border border-line-strong bg-white">
       <div className="divide-y divide-line md:hidden">
         {options.map((option) => (
           <section key={option.key} className={option.key === lowestKey ? "bg-success-50 p-5" : "p-5"} aria-label={option.label}>

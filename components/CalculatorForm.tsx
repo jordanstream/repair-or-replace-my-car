@@ -10,6 +10,7 @@ import { analyticsEvents, trackEvent } from "@/lib/analytics";
 import { calculatorAssumptions, methodologyVersion, repairCategories, safetyConcernLabels, vehicleValueRanges } from "@/lib/calculator-constants";
 import type { CalculatorInput, QuoteConfirmation, ThreeWay, VehicleValueRange, VehicleValueStatus } from "@/lib/calculator";
 import { parseStoredCalculatorInput } from "@/lib/storage";
+import { displayEditableNumber } from "@/lib/numeric-input";
 
 const stepNames = ["Current situation", "Repair evidence", "Replacement assumptions", "Review"] as const;
 
@@ -74,6 +75,8 @@ const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD
 export function CalculatorForm() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<CalculatorInput>(defaults);
+  // Store display text separately so a typed 0 is distinguishable from an untouched blank.
+  const [numericDrafts, setNumericDrafts] = useState<Partial<Record<keyof CalculatorInput, string>>>({});
   const [formError, setFormError] = useState("");
   const [invalidFieldId, setInvalidFieldId] = useState("");
   const stepContainerRef = useRef<HTMLDivElement>(null);
@@ -100,6 +103,14 @@ export function CalculatorForm() {
     trackEvent(analyticsEvents.assumptionsEdited, { section: editTarget });
     requestAnimationFrame(() => {
       setForm({ ...stored, currentValueStatus: stored.currentValueStatus ?? (stored.currentValue > 0 ? "amount" : "unknown") });
+      setNumericDrafts({
+        currentLoanPayoff: String(stored.currentLoanPayoff),
+        currentMonthlyPayment: String(stored.currentMonthlyPayment),
+        currentPaymentsRemaining: String(stored.currentPaymentsRemaining),
+        downPayment: String(stored.downPayment),
+        apr: String(stored.apr),
+        taxesAndFees: String(stored.taxesAndFees)
+      });
       setStep(targetStep);
       requestAnimationFrame(() => {
         stepHeadingRef.current?.focus({ preventScroll: true });
@@ -114,6 +125,7 @@ export function CalculatorForm() {
 
   // Let users type partial numbers; minimum values are checked when advancing steps.
   function numericUpdate<K extends keyof CalculatorInput>(key: K, value: string) {
+    setNumericDrafts((current) => ({ ...current, [key]: value }));
     update(key, (value === "" ? 0 : Math.max(0, numberValue(value))) as CalculatorInput[K]);
   }
 
@@ -245,13 +257,13 @@ export function CalculatorForm() {
             <h2 id="current-vehicle-heading" {...headingProps}><span className="sr-only">Step 1 of 4: </span>Your current situation</h2>
             <p className="mt-2 max-w-2xl leading-7 text-ink-700">Start with what you know today. A ballpark is enough where an exact number is not available.</p>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <Field label="Vehicle year"><TextInput id="vehicle-year" type="number" min="1950" value={form.vehicleYear || ""} aria-invalid={invalidFieldId === "vehicle-year"} onChange={(e) => numericUpdate("vehicleYear", e.target.value)} /></Field>
-              <Field label="Mileage"><TextInput type="number" min="0" value={form.mileage || ""} onChange={(e) => numericUpdate("mileage", e.target.value)} /></Field>
+              <Field label="Vehicle year"><TextInput id="vehicle-year" type="number" min="1950" value={displayEditableNumber(form.vehicleYear, numericDrafts.vehicleYear)} aria-invalid={invalidFieldId === "vehicle-year"} onChange={(e) => numericUpdate("vehicleYear", e.target.value)} /></Field>
+              <Field label="Mileage"><TextInput type="number" min="0" value={displayEditableNumber(form.mileage, numericDrafts.mileage)} onChange={(e) => numericUpdate("mileage", e.target.value)} /></Field>
               <Field label="Make"><TextInput value={form.make} onChange={(e) => update("make", e.target.value)} placeholder="Toyota" /></Field>
               <Field label="Model"><TextInput value={form.model} onChange={(e) => update("model", e.target.value)} placeholder="Camry" /></Field>
-              <Field label="Current loan payoff amount" helper="Enter $0 if you do not have a loan on this vehicle."><TextInput id="current-loan-payoff" type="number" min="0" value={form.currentLoanPayoff || ""} aria-invalid={invalidFieldId === "current-loan-payoff"} onChange={(e) => numericUpdate("currentLoanPayoff", e.target.value)} /></Field>
-              <Field label="Current monthly payment" helper="Enter $0 if you do not have a current vehicle loan."><TextInput id="current-monthly-payment" type="number" min="0" value={form.currentMonthlyPayment || ""} aria-invalid={invalidFieldId === "current-monthly-payment"} onChange={(e) => numericUpdate("currentMonthlyPayment", e.target.value)} /></Field>
-              <Field label="Number of monthly payments remaining" helper="Use the remaining payment count from your lender, not the original loan term."><TextInput id="current-payments-remaining" type="number" min="0" step="1" value={form.currentPaymentsRemaining || ""} aria-invalid={invalidFieldId === "current-payments-remaining"} onChange={(e) => numericUpdate("currentPaymentsRemaining", e.target.value)} /></Field>
+              <Field label="Current loan payoff amount" helper="Enter $0 if you do not have a loan on this vehicle."><TextInput id="current-loan-payoff" type="number" min="0" value={displayEditableNumber(form.currentLoanPayoff, numericDrafts.currentLoanPayoff)} aria-invalid={invalidFieldId === "current-loan-payoff"} onChange={(e) => numericUpdate("currentLoanPayoff", e.target.value)} /></Field>
+              <Field label="Current monthly payment" helper="Enter $0 if you do not have a current vehicle loan."><TextInput id="current-monthly-payment" type="number" min="0" value={displayEditableNumber(form.currentMonthlyPayment, numericDrafts.currentMonthlyPayment)} aria-invalid={invalidFieldId === "current-monthly-payment"} onChange={(e) => numericUpdate("currentMonthlyPayment", e.target.value)} /></Field>
+              <Field label="Number of monthly payments remaining" helper="Use the remaining payment count from your lender, not the original loan term."><TextInput id="current-payments-remaining" type="number" min="0" step="1" value={displayEditableNumber(form.currentPaymentsRemaining, numericDrafts.currentPaymentsRemaining)} aria-invalid={invalidFieldId === "current-payments-remaining"} onChange={(e) => numericUpdate("currentPaymentsRemaining", e.target.value)} /></Field>
             </div>
             <div className="mt-8 rounded-2xl border border-line bg-wash p-5 sm:p-6">
               <h3 className="text-lg font-bold text-ink-950">About what is the car worth today?</h3>
@@ -268,6 +280,8 @@ export function CalculatorForm() {
                   value={form.currentValueStatus ?? (form.currentValue > 0 ? "amount" : "unknown")}
                   onChange={(value) => {
                     const status = value as VehicleValueStatus;
+                    // Reset the display draft when switching to a range or an unknown value.
+                    setNumericDrafts((current) => ({ ...current, currentValue: undefined }));
                     update("currentValueStatus", status);
                     if (status === "unknown") {
                       update("currentValue", 0);
@@ -280,7 +294,7 @@ export function CalculatorForm() {
               {form.currentValueStatus === "amount" ? (
                 <div className="motion-feedback mt-5 max-w-sm">
                   <Field label="Ballpark current value" helper="Think about what it might sell or trade for today, not what you originally paid.">
-                    <TextInput id="current-value" type="number" min="0" value={form.currentValue || ""} aria-invalid={invalidFieldId === "current-value"} onChange={(e) => numericUpdate("currentValue", e.target.value)} />
+                    <TextInput id="current-value" type="number" min="0" value={displayEditableNumber(form.currentValue, numericDrafts.currentValue)} aria-invalid={invalidFieldId === "current-value"} onChange={(e) => numericUpdate("currentValue", e.target.value)} />
                   </Field>
                 </div>
               ) : null}
@@ -322,8 +336,8 @@ export function CalculatorForm() {
             <p className="mt-2 max-w-2xl leading-7 text-ink-700">Enter the written or verbal estimate provided by the repair shop. This tool does not estimate the repair price.</p>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Repair category"><Select value={form.repairCategory} onChange={(e) => update("repairCategory", e.target.value)}>{repairCategories.map((category) => <option key={category}>{category}</option>)}</Select></Field>
-              <Field label="Repair estimate you received" helper="Use the amount the shop gave you, including known fees and taxes when available."><TextInput id="repair-quote" type="number" min="0" value={form.repairQuote || ""} aria-invalid={invalidFieldId === "repair-quote"} onChange={(e) => numericUpdate("repairQuote", e.target.value)} /></Field>
-              <Field label="Estimated months this repair will keep the car usable" helper="Use your own assumption or ask the shop what the repair is expected to address."><TextInput id="usable-months" type="number" min="1" value={form.usableMonthsAfterRepair || ""} aria-invalid={invalidFieldId === "usable-months"} onChange={(e) => numericUpdate("usableMonthsAfterRepair", e.target.value)} /></Field>
+              <Field label="Repair estimate you received" helper="Use the amount the shop gave you, including known fees and taxes when available."><TextInput id="repair-quote" type="number" min="0" value={displayEditableNumber(form.repairQuote, numericDrafts.repairQuote)} aria-invalid={invalidFieldId === "repair-quote"} onChange={(e) => numericUpdate("repairQuote", e.target.value)} /></Field>
+              <Field label="Estimated months this repair will keep the car usable" helper="Use your own assumption or ask the shop what the repair is expected to address."><TextInput id="usable-months" type="number" min="1" value={displayEditableNumber(form.usableMonthsAfterRepair, numericDrafts.usableMonthsAfterRepair)} aria-invalid={invalidFieldId === "usable-months"} onChange={(e) => numericUpdate("usableMonthsAfterRepair", e.target.value)} /></Field>
             </div>
 
             <div className="mt-8 rounded-lg border border-line bg-wash p-5">
@@ -353,15 +367,15 @@ export function CalculatorForm() {
             <div className="mt-5"><Alert tone="info">This site does not look up market values, financing offers, insurance quotes, or local taxes.</Alert></div>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Comparison period"><Select value={form.comparisonMonths} onChange={(e) => update("comparisonMonths", numberValue(e.target.value) as 12 | 24 | 36)}><option value={12}>12 months</option><option value={24}>24 months</option><option value={36}>36 months</option></Select></Field>
-              <Field label="Used replacement purchase price"><TextInput id="used-price" type="number" min="0" value={form.usedPurchasePrice || ""} aria-invalid={invalidFieldId === "used-price"} onChange={(e) => numericUpdate("usedPurchasePrice", e.target.value)} /></Field>
-              <Field label="New replacement purchase price"><TextInput id="new-price" type="number" min="0" value={form.newPurchasePrice || ""} aria-invalid={invalidFieldId === "new-price"} onChange={(e) => numericUpdate("newPurchasePrice", e.target.value)} /></Field>
-              <Field label="Down payment"><TextInput type="number" min="0" value={form.downPayment || ""} onChange={(e) => numericUpdate("downPayment", e.target.value)} /></Field>
-              <Field label="Estimated APR"><TextInput type="number" min="0" step="0.1" value={form.apr || ""} onChange={(e) => numericUpdate("apr", e.target.value)} /></Field>
-              <Field label="Loan term in months"><TextInput id="loan-term" type="number" min="1" value={form.loanTermMonths || ""} aria-invalid={invalidFieldId === "loan-term"} onChange={(e) => numericUpdate("loanTermMonths", e.target.value)} /></Field>
+              <Field label="Used replacement purchase price"><TextInput id="used-price" type="number" min="0" value={displayEditableNumber(form.usedPurchasePrice, numericDrafts.usedPurchasePrice)} aria-invalid={invalidFieldId === "used-price"} onChange={(e) => numericUpdate("usedPurchasePrice", e.target.value)} /></Field>
+              <Field label="New replacement purchase price"><TextInput id="new-price" type="number" min="0" value={displayEditableNumber(form.newPurchasePrice, numericDrafts.newPurchasePrice)} aria-invalid={invalidFieldId === "new-price"} onChange={(e) => numericUpdate("newPurchasePrice", e.target.value)} /></Field>
+              <Field label="Down payment"><TextInput type="number" min="0" value={displayEditableNumber(form.downPayment, numericDrafts.downPayment)} onChange={(e) => numericUpdate("downPayment", e.target.value)} /></Field>
+              <Field label="Estimated APR"><TextInput type="number" min="0" step="0.1" value={displayEditableNumber(form.apr, numericDrafts.apr)} onChange={(e) => numericUpdate("apr", e.target.value)} /></Field>
+              <Field label="Loan term in months"><TextInput id="loan-term" type="number" min="1" value={displayEditableNumber(form.loanTermMonths, numericDrafts.loanTermMonths)} aria-invalid={invalidFieldId === "loan-term"} onChange={(e) => numericUpdate("loanTermMonths", e.target.value)} /></Field>
               <Field label="Estimated monthly insurance increase or decrease"><TextInput type="number" value={form.insuranceMonthlyDelta} onChange={(e) => update("insuranceMonthlyDelta", numberValue(e.target.value))} /></Field>
               <Field label="Estimated monthly fuel-cost difference"><TextInput type="number" value={form.fuelMonthlyDelta} onChange={(e) => update("fuelMonthlyDelta", numberValue(e.target.value))} /></Field>
               <Field label="Estimated monthly maintenance-cost difference"><TextInput type="number" value={form.maintenanceMonthlyDelta} onChange={(e) => update("maintenanceMonthlyDelta", numberValue(e.target.value))} /></Field>
-              <Field label="Estimated sales tax, registration, and dealer-fee total" helper="Counted as upfront cash, not added to the financed amount."><TextInput type="number" min="0" value={form.taxesAndFees || ""} onChange={(e) => numericUpdate("taxesAndFees", e.target.value)} /></Field>
+              <Field label="Estimated sales tax, registration, and dealer-fee total" helper="Counted as upfront cash, not added to the financed amount."><TextInput type="number" min="0" value={displayEditableNumber(form.taxesAndFees, numericDrafts.taxesAndFees)} onChange={(e) => numericUpdate("taxesAndFees", e.target.value)} /></Field>
               <Field label="ZIP code for optional search links" helper="Optional. Used only to create outbound search links."><TextInput inputMode="numeric" maxLength={10} value={form.zipCode} onChange={(e) => update("zipCode", e.target.value)} /></Field>
             </div>
             <details className="motion-details mt-6 rounded-lg border border-line bg-wash p-5">

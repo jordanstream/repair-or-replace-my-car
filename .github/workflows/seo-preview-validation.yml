@@ -35,6 +35,8 @@ jobs:
         run: node --import tsx tests/numeric-input-display.ts
       - name: Results comparison border contract
         run: node --import tsx tests/comparison-border-contract.ts
+      - name: Checklist signup privacy contracts
+        run: node --import tsx tests/checklist-signup-privacy.ts
       - name: SEO and redirect contracts
         run: node --import tsx tests/seo-contracts.ts
       - name: Affiliate disclosure release contracts

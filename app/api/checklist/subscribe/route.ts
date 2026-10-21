@@ -138,7 +138,7 @@ export async function POST(request: Request) {
   if (!payload) return NextResponse.json({ error: "Invalid or oversized request." }, { status: 400 });
 
   // Basic honeypot: avoid writing spam submissions to the private contact sheet.
-  if (payload.company) return NextResponse.json({ ok: true });
+  if (payload.company) return NextResponse.json({ error: "Submission rejected." }, { status: 400 });
 
   const firstName = typeof payload.firstName === "string" ? payload.firstName.trim().replace(/\s+/g, " ") : "";
   const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
@@ -158,7 +158,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const hostname = new URL(request.url).hostname;
+    const hostname = request.headers.get("host")?.split(":")[0] ?? new URL(request.url).hostname;
     if (!await verifyTurnstile(token, hostname)) {
       return NextResponse.json({ error: "Spam protection failed. Please retry." }, { status: 403 });
     }

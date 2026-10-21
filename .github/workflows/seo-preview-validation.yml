@@ -33,6 +33,8 @@ jobs:
         run: node --import tsx tests/calculator-navigation-contract.ts
       - name: Numeric input display contracts
         run: node --import tsx tests/numeric-input-display.ts
+      - name: Results comparison border contract
+        run: node --import tsx tests/comparison-border-contract.ts
       - name: SEO and redirect contracts
         run: node --import tsx tests/seo-contracts.ts
       - name: Affiliate disclosure release contracts

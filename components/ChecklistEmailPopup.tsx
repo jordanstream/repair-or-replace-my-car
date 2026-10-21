@@ -19,6 +19,7 @@ export function ChecklistEmailPopup({
 }) {
   const [open, setOpen] = useState(false);
   const [dialogMounted, setDialogMounted] = useState(false);
+  const [completed, setCompleted] = useState(false);
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -30,6 +31,7 @@ export function ChecklistEmailPopup({
   }, [open]);
 
   function openDialog() {
+    setCompleted(false);
     previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setDialogMounted(true);
     setOpen(true);
@@ -118,10 +120,12 @@ export function ChecklistEmailPopup({
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Free PDF</p>
                 <h2 id={titleId} className="mt-2 text-2xl font-bold text-ink-950">
-                  Get My Free Checklist
+                  {completed ? "Your checklist is ready" : "Get My Free Checklist"}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-ink-700">
-                  Enter your first name and email, then download the PDF after your request is saved.
+                  {completed
+                    ? "Thanks! Your request was saved. Download the PDF below."
+                    : "Enter your first name and email, then download the PDF after your request is saved."}
                 </p>
               </div>
               <button
@@ -134,7 +138,7 @@ export function ChecklistEmailPopup({
                 ×
               </button>
             </div>
-            <ChecklistSignup placement={placement} variant="modal" />
+            <ChecklistSignup placement={placement} variant="modal" onSuccess={() => setCompleted(true)} />
           </div>
         </div>
       ) : null}
